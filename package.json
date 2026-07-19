@@ -1,0 +1,17 @@
+{
+  "name": "proactive-seo",
+  "private": true,
+  "packageManager": "pnpm@9.15.5",
+  "pnpm": {
+    "overrides": {
+      "postcss": "8.5.10"
+    }
+  },
+  "scripts": {
+    "dev": "pnpm --filter @proactive/web dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck"
+  }
+}

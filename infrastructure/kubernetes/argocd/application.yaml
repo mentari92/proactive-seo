@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata: {name: proactive-seo, namespace: argocd}
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/mentari92/proactive-seo-blueprint.git
+    targetRevision: main
+    path: infrastructure/kubernetes/chart
+    helm: {valueFiles: [values.yaml]}
+  destination: {server: https://kubernetes.default.svc, namespace: proactive-seo}
+  syncPolicy:
+    automated: {prune: true, selfHeal: true}
+    syncOptions: [CreateNamespace=true, ServerSideApply=true]
+    retry: {limit: 5, backoff: {duration: 10s, factor: 2, maxDuration: 3m}}
+

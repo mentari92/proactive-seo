@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: proactive-seo
+  annotations:
+    eks.amazonaws.com/role-arn: {{ default "" .Values.global.irsaRoleArn | quote }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: {{ .Values.global.configMapName }}}
+data:
+  APP_LIVE_ACTIONS_ENABLED: "false"
+  APP_CORS_ORIGINS: '["https://{{ .Values.ingress.host }}"]'
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: default-deny}
+spec: {podSelector: {}, policyTypes: [Ingress, Egress]}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: allow-platform-traffic}
+spec:
+  podSelector: {matchLabels: {app.kubernetes.io/part-of: proactive-seo}}
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - {namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: ingress-system}}}
+        - {podSelector: {matchLabels: {app.kubernetes.io/part-of: proactive-seo}}}
+      ports: [{protocol: TCP, port: 8000}, {protocol: TCP, port: 3000}]
+  egress:
+    - to: [{namespaceSelector: {}}]
+      ports: [{protocol: UDP, port: 53}, {protocol: TCP, port: 53}]
+    - to: [{ipBlock: {cidr: 0.0.0.0/0, except: [10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16]}}]
+      ports: [{protocol: TCP, port: 443}]
+    - to: [{ipBlock: {cidr: 10.0.0.0/8}}]
+      ports: [{protocol: TCP, port: 5432}, {protocol: TCP, port: 6379}]
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata: {name: proactive-seo-secrets}
+spec:
+  refreshInterval: 1h
+  secretStoreRef: {name: aws-secrets-manager, kind: ClusterSecretStore}
+  target: {name: proactive-seo-secrets, creationPolicy: Owner}
+  dataFrom: [{extract: {key: /proactive-seo/{{ .Values.global.environment }}/application}}]

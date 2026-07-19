@@ -1,0 +1,68 @@
+version: 1
+id_codec: "{prefix}_{base64url_uuid}"
+tables:
+  seo:
+    - organizations
+    - users
+    - roles
+    - permissions
+    - projects
+    - api_keys
+    - oauth_connections
+    - agents
+    - agent_runs
+    - agent_tasks
+    - agent_events
+    - pages
+    - page_issues
+    - page_fixes
+    - keywords
+    - serp_snapshots
+    - serp_features
+    - backlinks
+    - backlink_campaigns
+    - campaign_contacts
+    - campaign_messages
+    - campaign_events
+    - haro_queries
+    - haro_responses
+    - haro_submissions
+    - content_briefs
+    - content_drafts
+    - content_published
+    - content_performance
+    - analytics_snapshots
+    - search_analytics
+    - anomalies
+    - reports
+    - security_events
+    - rate_limit_logs
+    - ip_blocklist
+  audit:
+    - audit_logs
+agents:
+  - {key: sentinel, role: crawl, queue: agent.crawl}
+  - {key: forge, role: content, queue: agent.content}
+  - {key: technical, role: technical, queue: agent.technical}
+  - {key: scout, role: rank, queue: agent.rank}
+  - {key: outreach, role: backlink_outreach, queue: agent.outreach}
+  - {key: competitor, role: competitor, queue: agent.competitor}
+  - {key: decision, role: decision_engine, queue: agent.decision}
+  - {key: executor, role: action_executor, queue: agent.executor}
+providers:
+  execution: [gsc, ga4, bing, yandex, naver, gmail, exa, tavily, dataforseo, pagespeed, wordpress, webflow, shopify]
+  platform: [openai, stripe, slack, smtp, pagerduty]
+enums:
+  campaign_status: [draft, active, paused, completed, archived]
+  prospect_status: [draft, sent, replied, negotiating, live, rejected]
+  campaign_type: [broken_link, guest_post, unlinked_mention, haro]
+  agent_status: [active, paused, disabled, error]
+  run_status: [queued, running, completed, failed, cancelled]
+  issue_severity: [critical, high, medium, low, info]
+openai_router:
+  extraction: {model: gpt-5.6-luna, reasoning_effort: none}
+  routine: {model: gpt-5.6-terra, reasoning_effort: low}
+  high_impact: {model: gpt-5.6-sol, reasoning_effort: high}
+  code_repair: {model: gpt-5.3-codex, reasoning_effort: high}
+  legacy: {model: gpt-4o, enabled: false}
+

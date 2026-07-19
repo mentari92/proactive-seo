@@ -1,0 +1,16 @@
+.git
+.venv
+.mypy_cache
+.pytest_cache
+.ruff_cache
+**/__pycache__
+**/*.pyc
+**/node_modules
+**/.next
+.coverage
+coverage.xml
+playwright-report
+test-results
+.terraform
+*.tfstate
+.env

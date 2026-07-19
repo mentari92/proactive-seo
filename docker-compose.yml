@@ -1,0 +1,283 @@
+name: proactive-seo
+
+x-common-env: &common-env
+  APP_ENV: development
+  APP_LIVE_ACTIONS_ENABLED: "false"
+  APP_TASK_DISPATCH_ENABLED: "true"
+  APP_DATABASE_URL: postgresql+asyncpg://proactive:proactive@postgres:5432/proactive
+  APP_REDIS_URL: redis://redis:6379/0
+  APP_CORS_ORIGINS: '["http://localhost:3000"]'
+
+x-api: &api
+  build:
+    context: .
+  environment: *common-env
+  restart: unless-stopped
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  networks: [backend]
+  security_opt: ["no-new-privileges:true"]
+  read_only: true
+  tmpfs: [/tmp]
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    profiles: [core, agents, integrations, full]
+    environment:
+      POSTGRES_DB: proactive
+      POSTGRES_USER: proactive
+      POSTGRES_PASSWORD: proactive
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U proactive -d proactive"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [backend]
+
+  redis:
+    image: redis:7-alpine
+    profiles: [core, agents, integrations, full]
+    command: [redis-server, --appendonly, "yes", --maxmemory-policy, allkeys-lru]
+    volumes: [redis-data:/data]
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [backend]
+
+  minio:
+    image: minio/minio:latest
+    profiles: [core, full]
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: proactive
+      MINIO_ROOT_PASSWORD: proactive-local-only
+    volumes: [minio-data:/data]
+    ports: ["9001:9001"]
+    networks: [backend]
+
+  migrate:
+    <<: *api
+    profiles: [core, full]
+    command: [alembic, upgrade, head]
+    restart: "no"
+
+  api:
+    <<: *api
+    profiles: [core, full]
+    environment:
+      APP_SERVICE_NAME: all
+      APP_DATABASE_URL: postgresql+asyncpg://proactive:proactive@postgres:5432/proactive
+      APP_REDIS_URL: redis://redis:6379/0
+    ports: ["8000:8000"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  auth-service:
+    <<: *api
+    profiles: [core, full]
+    environment: {<<: *common-env, APP_SERVICE_NAME: auth-service}
+    ports: ["8001:8000"]
+
+  tenant-service:
+    <<: *api
+    profiles: [core, full]
+    environment: {<<: *common-env, APP_SERVICE_NAME: tenant-service}
+    ports: ["8002:8000"]
+
+  keyword-service:
+    <<: *api
+    profiles: [agents, full]
+    environment: {<<: *common-env, APP_SERVICE_NAME: keyword-service}
+    ports: ["8003:8000"]
+
+  crawl-service:
+    <<: *api
+    profiles: [agents, full]
+    environment: {<<: *common-env, APP_SERVICE_NAME: crawl-service}
+    ports: ["8004:8000"]
+
+  content-service:
+    <<: *api
+    profiles: [agents, full]
+    environment: {<<: *common-env, APP_SERVICE_NAME: content-service}
+    ports: ["8005:8000"]
+
+  rank-tracker-service:
+    <<: *api
+    profiles: [agents, full]
+    environment: {<<: *common-env, APP_SERVICE_NAME: rank-tracker-service}
+    ports: ["8006:8000"]
+
+  serp-monitor-service:
+    <<: *api
+    profiles: [agents, full]
+    environment: {<<: *common-env, APP_SERVICE_NAME: serp-monitor-service}
+    ports: ["8007:8000"]
+
+  analytics-service:
+    <<: *api
+    profiles: [integrations, full]
+    environment: {<<: *common-env, APP_SERVICE_NAME: analytics-service}
+    ports: ["8008:8000"]
+
+  notification-service:
+    <<: *api
+    profiles: [integrations, full]
+    environment: {<<: *common-env, APP_SERVICE_NAME: notification-service}
+    ports: ["8009:8000"]
+
+  billing-service:
+    <<: *api
+    profiles: [full]
+    environment: {<<: *common-env, APP_SERVICE_NAME: billing-service}
+    ports: ["8010:8000"]
+
+  report-service:
+    <<: *api
+    profiles: [core, full]
+    environment: {<<: *common-env, APP_SERVICE_NAME: report-service}
+    ports: ["8011:8000"]
+
+  link-analysis-service:
+    <<: *api
+    profiles: [agents, full]
+    environment: {<<: *common-env, APP_SERVICE_NAME: link-analysis-service}
+    ports: ["8012:8000"]
+
+  ai-service:
+    <<: *api
+    profiles: [agents, full]
+    environment: {<<: *common-env, APP_SERVICE_NAME: ai-service}
+    ports: ["8013:8000"]
+
+  audit-service:
+    <<: *api
+    profiles: [core, full]
+    environment: {<<: *common-env, APP_SERVICE_NAME: audit-service}
+    ports: ["8014:8000"]
+
+  celery-worker:
+    <<: *api
+    profiles: [agents, full]
+    command:
+      - celery
+      - -A
+      - proactive_core.celery_app:celery_app
+      - worker
+      - --loglevel=INFO
+      - -Q
+      - "agent.crawl,agent.content,agent.technical,agent.rank,agent.outreach,agent.competitor,agent.decision,agent.executor"
+    environment:
+      APP_REDIS_URL: redis://redis:6379/0
+      APP_DATABASE_URL: postgresql+asyncpg://proactive:proactive@postgres:5432/proactive
+
+  celery-beat:
+    <<: *api
+    profiles: [agents, full]
+    command:
+      - celery
+      - -A
+      - proactive_core.celery_app:celery_app
+      - beat
+      - --loglevel=INFO
+      - --schedule=/tmp/celerybeat-schedule
+    environment:
+      APP_REDIS_URL: redis://redis:6379/0
+      APP_DATABASE_URL: postgresql+asyncpg://proactive:proactive@postgres:5432/proactive
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    profiles: [core, full]
+    environment:
+      INTERNAL_API_URL: http://api:8000
+    ports: ["3000:3000"]
+    depends_on: [api]
+    networks: [backend]
+
+  prometheus:
+    image: prom/prometheus:v3.4.2
+    profiles: [observability, full]
+    command: [--config.file=/etc/prometheus/prometheus.yml, --storage.tsdb.retention.time=30d]
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./observability/prometheus/rules.yml:/etc/prometheus/rules.yml:ro
+      - prometheus-data:/prometheus
+    ports: ["9090:9090"]
+    networks: [backend]
+
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
+    profiles: [observability, full]
+    volumes:
+      - ./observability/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    ports: ["9093:9093"]
+    networks: [backend]
+
+  loki:
+    image: grafana/loki:3.5.1
+    profiles: [observability, full]
+    command: [-config.file=/etc/loki/loki.yml]
+    volumes:
+      - ./observability/loki/loki.yml:/etc/loki/loki.yml:ro
+      - loki-data:/loki
+    ports: ["3100:3100"]
+    networks: [backend]
+
+  tempo:
+    image: grafana/tempo:2.8.0
+    profiles: [observability, full]
+    command: [-config.file=/etc/tempo/tempo.yml]
+    volumes:
+      - ./observability/tempo/tempo.yml:/etc/tempo/tempo.yml:ro
+      - tempo-data:/var/tempo
+    ports: ["3200:3200"]
+    networks: [backend]
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.152.1
+    profiles: [observability, full]
+    command: [--config=/etc/otel/collector.yml]
+    volumes:
+      - ./observability/otel/collector.yml:/etc/otel/collector.yml:ro
+    ports: ["4317:4317", "4318:4318"]
+    depends_on: [tempo]
+    networks: [backend]
+
+  grafana:
+    image: grafana/grafana:12.0.2
+    profiles: [observability, full]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: proactive-local-only
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/proactive-overview.json:/var/lib/grafana/dashboards/proactive-overview.json:ro
+      - grafana-data:/var/lib/grafana
+    ports: ["3001:3000"]
+    depends_on: [prometheus, loki, tempo]
+    networks: [backend]
+
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:
+  prometheus-data:
+  loki-data:
+  tempo-data:
+  grafana-data:
+
+networks:
+  backend:
+    driver: bridge

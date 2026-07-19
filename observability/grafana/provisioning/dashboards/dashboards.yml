@@ -1,0 +1,7 @@
+apiVersion: 1
+providers:
+  - name: ProActive SEO
+    folder: ProActive SEO
+    type: file
+    options: {path: /var/lib/grafana/dashboards}
+

@@ -1,0 +1,42 @@
+global:
+  environment: staging
+  imagePullPolicy: IfNotPresent
+  configMapName: proactive-seo-config
+  secretName: proactive-seo-secrets
+  otelEndpoint: http://otel-collector:4318
+
+image:
+  backend: ghcr.io/mentari92/proactive-seo-backend
+  frontend: ghcr.io/mentari92/proactive-seo-web
+  tag: latest
+
+services:
+  - {name: auth-service, port: 8001, replicas: 3, cpu: 250m, memory: 256Mi}
+  - {name: tenant-service, port: 8002, replicas: 3, cpu: 250m, memory: 256Mi}
+  - {name: keyword-service, port: 8003, replicas: 3, cpu: 500m, memory: 512Mi}
+  - {name: crawl-service, port: 8004, replicas: 4, cpu: 1, memory: 1Gi}
+  - {name: content-service, port: 8005, replicas: 3, cpu: 500m, memory: 512Mi}
+  - {name: rank-tracker-service, port: 8006, replicas: 4, cpu: 500m, memory: 512Mi}
+  - {name: serp-monitor-service, port: 8007, replicas: 3, cpu: 500m, memory: 512Mi}
+  - {name: analytics-service, port: 8008, replicas: 3, cpu: 500m, memory: 512Mi}
+  - {name: notification-service, port: 8009, replicas: 3, cpu: 250m, memory: 256Mi}
+  - {name: billing-service, port: 8010, replicas: 2, cpu: 250m, memory: 256Mi}
+  - {name: report-service, port: 8011, replicas: 3, cpu: 500m, memory: 512Mi}
+  - {name: link-analysis-service, port: 8012, replicas: 3, cpu: 500m, memory: 512Mi}
+  - {name: ai-service, port: 8013, replicas: 4, cpu: 1, memory: 1Gi}
+  - {name: audit-service, port: 8014, replicas: 2, cpu: 250m, memory: 256Mi}
+
+workers:
+  - {name: crawl, queue: agent.crawl, replicas: 4, cpu: 1, memory: 1Gi}
+  - {name: content, queue: agent.content, replicas: 3, cpu: 1, memory: 1Gi}
+  - {name: technical, queue: agent.technical, replicas: 3, cpu: 1, memory: 1Gi}
+  - {name: rank, queue: agent.rank, replicas: 4, cpu: 500m, memory: 512Mi}
+  - {name: outreach, queue: agent.outreach, replicas: 3, cpu: 500m, memory: 512Mi}
+  - {name: competitor, queue: agent.competitor, replicas: 2, cpu: 500m, memory: 512Mi}
+  - {name: decision, queue: agent.decision, replicas: 2, cpu: 500m, memory: 512Mi}
+  - {name: executor, queue: agent.executor, replicas: 2, cpu: 500m, memory: 512Mi}
+
+frontend: {replicas: 3, port: 3000}
+ingress: {enabled: true, className: cloudflare-tunnel, host: app.example.com}
+autoscaling: {enabled: true, minReplicas: 2, maxReplicas: 20, cpuUtilization: 70}
+serviceMonitor: {enabled: true, interval: 30s}
