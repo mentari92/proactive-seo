@@ -83,7 +83,9 @@ Campaign Tracker:
 
 ## BUILD ORDER
 
-Phase 1: Foundation (Week 1)
+Build everything as fast as possible. Complete ALL phases. Do not stop until everything is built and tested.
+
+Phase 1: Foundation
 1. Project structure (monorepo)
 2. Docker Compose setup
 3. PostgreSQL + Redis setup
@@ -92,20 +94,20 @@ Phase 1: Foundation (Week 1)
 6. Authentication (OAuth 2.0 + JWT)
 7. Basic CRUD (organizations, users, projects)
 
-Phase 2: Core Agents (Week 2)
+Phase 2: Core Agents
 8. Celery worker setup
 9. Crawler Agent (basic crawl + broken link detection)
 10. Technical Agent (basic audit + schema generation)
 11. Agent orchestration framework
 12. Event bus (Redis pub/sub)
 
-Phase 3: Content & Rank (Week 3)
+Phase 3: Content & Rank
 13. Content Agent (audit + dual scoring)
 14. Rank Agent (DataForSEO SERP tracking)
 15. DataForSEO integration (SERP + Keywords + Backlinks)
 16. GSC integration
 
-Phase 4: Outreach (Week 4)
+Phase 4: Outreach
 17. Backlink & Outreach Agent
 18. HARO Response Generator
 19. Broken Link Building
@@ -113,7 +115,7 @@ Phase 4: Outreach (Week 4)
 21. Gmail API integration (send + track)
 22. Campaign Tracker
 
-Phase 5: Frontend (Week 5-6)
+Phase 5: Frontend
 23. Next.js project setup
 24. Design system (shadcn/ui + Tailwind tokens)
 25. Auth pages (login, register, forgot password)
@@ -124,14 +126,14 @@ Phase 5: Frontend (Week 5-6)
 30. Content Hub (briefs, drafts, editor)
 31. Settings (profile, org, integrations)
 
-Phase 6: Integrations (Week 7)
+Phase 6: Integrations
 32. GA4 integration
 33. Bing Webmaster integration
 34. Exa AI integration
 35. Tavily integration
 36. PageSpeed Insights integration
 
-Phase 7: Polish (Week 8)
+Phase 7: Polish
 37. Monitoring (Prometheus + Grafana)
 38. Logging (structured JSON + Loki)
 39. Alerting (critical, warning, info)
@@ -159,6 +161,9 @@ Phase 7: Polish (Week 8)
 - Use claude-design principles for frontend (see docs/07-frontend.md)
 - All outreach emails sent via Gmail API (see docs/06-integrations.md)
 - DataForSEO replaces SerpAPI + Ahrefs (see docs/06-integrations.md)
+- Build EVERYTHING. Do not skip any phase or task.
+- Do not stop until all 42 tasks are complete.
+- If you run out of context, continue from where you left off.
 
 Start building. Read the docs first, then begin with Phase 1.
 ```
