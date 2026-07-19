@@ -2616,7 +2616,6 @@ class TavilyClient:
 | **Docs** | `https://dataforseo.com/apis` |
 | **Cost** | $0.0006/keyword, $0.002/SERP, $0.01/backlink request |
 
-DataForSEO consolidates SERP tracking, keyword research, backlink analysis, on-page auditing, and content NLP into a single unified API — replacing both SerpAPI and Ahrefs at a fraction of the cost.
 
 ### 11.2 Sub-APIs & Endpoints
 
@@ -2647,7 +2646,6 @@ DataForSEO consolidates SERP tracking, keyword research, backlink analysis, on-p
 
 **Rate Limits:** 2,000 tasks/minute, $0.0006 per keyword.
 
-#### 11.2.3 Backlinks API — Link Analysis (Replaces Ahrefs)
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
@@ -2810,7 +2808,6 @@ class DataForSEOOnPageSummary:
 """
 integrations/dataforseo/client.py
 DataForSEO API integration — unified SERP, keywords, backlinks, and on-page analysis.
-Replaces both SerpAPI (SERP tracking) and Ahrefs (backlink/keyword data).
 """
 
 import asyncio
@@ -2833,7 +2830,6 @@ class DataForSEOClient:
 
     Auth: HTTP Basic Auth (login:password from DataForSEO dashboard).
     Consolidates SERP tracking + backlink analysis + keyword research
-    into a single integration (replaces SerpAPI + Ahrefs).
     """
 
     PROVIDER = "dataforseo"
@@ -3086,7 +3082,6 @@ class DataForSEOClient:
         )
         return resp.json()
 
-    # ========== Backlinks API (Replaces Ahrefs) ==========
 
     async def get_backlink_summary(
         self,
@@ -3096,7 +3091,6 @@ class DataForSEOClient:
         """
         Get domain backlink summary (domain rank, backlinks count, ref domains).
 
-        Replaces: Ahrefs get_site_overview()
         """
         cache_params = {"target": target, "mode": mode}
         cached = await self.cache.get(self.PROVIDER, "backlink_summary", cache_params)
@@ -3128,7 +3122,6 @@ class DataForSEOClient:
         """
         Get backlinks for a target.
 
-        Replaces: Ahrefs get_backlinks()
         """
         await self.rate_limiter.acquire(self.PROVIDER)
         post_data = [{
@@ -3156,7 +3149,6 @@ class DataForSEOClient:
         """
         Get referring domains with domain rank.
 
-        Replaces: Ahrefs get_referring_domains()
         """
         await self.rate_limiter.acquire(self.PROVIDER)
         post_data = [{"target": target, "mode": mode, "limit": limit, "offset": offset}]
@@ -3192,7 +3184,6 @@ class DataForSEOClient:
         """
         Get top pages by backlinks.
 
-        Replaces: Ahrefs get_top_pages() and get_best_by_links()
         """
         await self.rate_limiter.acquire(self.PROVIDER)
         post_data = [{"target": target, "mode": mode, "limit": limit}]
@@ -3212,7 +3203,6 @@ class DataForSEOClient:
         """
         Get broken backlinks.
 
-        Replaces: Ahrefs get_broken_links()
         """
         await self.rate_limiter.acquire(self.PROVIDER)
         post_data = [{"target": target, "mode": mode, "limit": limit}]
@@ -3285,7 +3275,6 @@ class DataForSEOClient:
         """
         Check if a specific backlink exists.
 
-        Replaces: Ahrefs check_backlink()
         """
         backlinks = await self.get_backlinks(
             target=target, mode="exact", limit=100,
@@ -3310,7 +3299,6 @@ class DataForSEOClient:
         """
         Get domain rank (authority metric, 0-100).
 
-        Replaces: Ahrefs get_domain_rating()
         """
         summary = await self.get_backlink_summary(target=domain)
         tasks = summary.get("tasks", [])
@@ -4732,7 +4720,6 @@ EXA_API_KEY=...
 # Tavily
 TAVILY_API_KEY=...
 
-# DataForSEO (replaces SerpAPI + Ahrefs)
 DATAFORSEO_LOGIN=...
 DATAFORSEO_PASSWORD=...
 
