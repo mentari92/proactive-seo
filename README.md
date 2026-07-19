@@ -97,3 +97,9 @@ See [Implementation Guide](docs/09-implementation.md), [Security Policy](SECURIT
 [operations runbook](docs/runbooks/operations.md) before enabling credentials or live actions. The
 [acceptance ledger](docs/10-acceptance.md) maps every build phase to its executable evidence and
 separates local checks from credential- or environment-gated release checks.
+
+---
+
+*Built and maintained for [@mentari92](https://github.com/mentari92) — enterprise SEO automation
+orchestrated by 8 AI agents with multi-engine SERP tracking, GEO/AEO optimization, and
+full-lifecycle outreach campaign management.*
