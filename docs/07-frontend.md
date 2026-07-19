@@ -2102,7 +2102,7 @@ Each page maps to exactly one surface archetype. The surface determines composit
 │           │  Available                                                     │
 │           │  ─────────────────────────────────────────────────────────── │
 │           │  ┌─────────────────────┐  ┌─────────────────────┐          │
-│           │  │ Ahrefs              │  │ SEMrush             │          │
+│           │  │ DataForSEO          │  │ SEMrush             │          │
 │           │  │ ○ Not connected     │  │ ○ Not connected     │          │
 │           │  │ Backlink data       │  │ Keyword data        │          │
 │           │  │ [Connect →]         │  │ [Connect →]         │          │

@@ -49,7 +49,7 @@
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                     BACKLINK & OUTREACH AGENT                                │
 │  HARO │ Broken Link │ Guest Post │ Unlinked Mention │ Campaign Tracker      │
-│  Gmail API │ Exa AI │ Tavily │ Ahrefs │ Follow-ups │ Link Verification     │
+│  Gmail API │ Exa AI │ Tavily │ DataForSEO │ Follow-ups │ Link Verification     │
 └──────────────────────────────────────┬──────────────────────────────────────┘
                                        │
        ┌───────────────────────────────┼───────────────────────────────┐
@@ -72,13 +72,13 @@
 | **Gmail API** | Send outreach emails, track opens, webhooks | 250/day (consumer), 1500/day (workspace) | OAuth2 | `https://gmail.googleapis.com/gmail/v1/` |
 | **Exa AI** | Semantic search, content extraction, link discovery | 1000 req/min | API Key | `https://api.exa.ai/` |
 | **Tavily** | Research queries, content extraction | 1000 req/day (pro) | API Key | `https://api.tavily.com/` |
-| **SerpAPI** | SERP tracking across engines | 5000 req/mo (business) | API Key | `https://serpapi.com/search` |
+| **DataForSEO SERP API** | SERP tracking across engines (Google, Bing, Yandex, Naver) | 2000 req/min | Basic Auth | `https://api.dataforseo.com/v3/serp` |
 | **GSC API** | Search analytics, index management | 200 req/min | OAuth2 | `https://searchconsole.googleapis.com/webmasters/v3/` |
 | **Bing Webmaster** | Bing crawl/index data | 120 req/min | API Key | `https://ssl.bing.com/webmaster/api.svc/json/` |
 | **Yandex Webmaster** | Yandex index/crawl data | 100 req/min | OAuth2 | `https://api.webmaster.yandex.net/v4/` |
 | **Naver Webmaster** | Naver search data | 60 req/min | API Key | `https://searchadvisor.naver.com/api/` |
 | **GA4 API** | Traffic analytics, conversion data | 10,000 req/day | OAuth2 | `https://analyticsdata.googleapis.com/v1beta/` |
-| **Ahrefs API** | Backlink data, domain rating, referring domains | 500 req/hr | API Key | `https://apiv2.ahrefs.com/` |
+| **DataForSEO Backlinks API** | Backlink data, domain rank, referring domains | 2000 req/min | Basic Auth | `https://api.dataforseo.com/v3/backlinks` |
 | **PageSpeed Insights** | Core Web Vitals, performance scores | 60 req/min | API Key | `https://www.googleapis.com/pagespeedonline/v5/runPagespeed` |
 
 ### 1.3 Message Bus Protocol
@@ -276,13 +276,13 @@ FUNCTION auto_fix_broken_link(broken_url, referrer_url):
                 "method": "exa_search"
             })
 
-    # Check Ahrefs for pages linking to similar content
-    ahrefs_similar = ahrefs_get_similar_pages(broken_url)
-    FOR EACH page IN ahrefs_similar:
+    # Check DataForSEO for pages linking to similar content
+    dataforseo_similar = dataforseo_get_similar_pages(broken_url)
+    FOR EACH page IN dataforseo_similar:
         candidates.append({
             "url": page.url,
             "score": page.similarity * 0.7,
-            "method": "ahrefs_similar"
+            "method": "dataforseo_similar"
         })
 
     # Step 2: Select best candidate
@@ -752,8 +752,8 @@ FUNCTION generate_content(target_keyword, content_type, tone, word_count):
         contents={"text": {"maxCharacters": 3000}}
     )
 
-    # 2. SERP Analysis (via SerpAPI — delegated to Scout if available, else direct)
-    serp_data = serpapi_search(
+    # 2. SERP Analysis (via DataForSEO SERP API — delegated to Scout if available, else direct)
+    serp_data = dataforseo_serp_search(
         engine="google",
         q=target_keyword,
         num=10,
@@ -899,15 +899,15 @@ class ForgeExecutionLayer:
         )
         return response.json()
 
-    # --- SerpAPI for SERP Analysis ---
-    def serpapi_search(self, engine: str, q: str, **kwargs) -> dict:
-        """GET https://serpapi.com/search"""
+    # --- DataForSEO SERP API ---
+    def dataforseo_serp_search(self, engine: str, q: str, **kwargs) -> dict:
+        """POST https://api.dataforseo.com/v3/serp/{engine}/organic/live/regular"""
         response = httpx.get(
-            "https://serpapi.com/search",
+            "https://api.dataforseo.com/v3/serp/" + engine + "/organic/live/regular",
             params={
                 "engine": engine,
                 "q": q,
-                "api_key": self.serpapi_key,
+                "login": self.dataforseo_login,
                 "num": kwargs.get("num", 10),
                 "gl": kwargs.get("gl", "us"),
                 "hl": kwargs.get("hl", "en"),
@@ -961,7 +961,7 @@ class ForgeExecutionLayer:
 | CPU | 4 cores | LLM inference offloaded to API |
 | Memory | 4 GB | Content analysis buffers |
 | Time | Single page audit: ≤2 min, Content generation: ≤10 min | |
-| API Quota | Tavily: 1000/day, Exa: 1000/min, SerpAPI: 5000/mo | Shared with other agents |
+| API Quota | Tavily: 1000/day, Exa: 1000/min, DataForSEO: 2000/min | Shared with other agents |
 | LLM Tokens | 50K tokens/day for content generation | Configurable budget |
 
 ### 3.7 Error Handling
@@ -973,7 +973,7 @@ class ForgeErrorHandler:
         "llm_rate_limited":  {"backoff": "exponential", "base_delay": 60, "max_retries": 5},
         "tavily_error":      {"backoff": "exponential", "base_delay": 10, "max_retries": 3},
         "exa_error":         {"backoff": "exponential", "base_delay": 10, "max_retries": 3},
-        "serpapi_error":     {"backoff": "exponential", "base_delay": 30, "max_retries": 3},
+        "dataforseo_error":     {"backoff": "exponential", "base_delay": 30, "max_retries": 3},
         "gsc_quota":         {"backoff": "linear", "base_delay": 60, "max_retries": 3},
     }
 
@@ -1561,7 +1561,7 @@ class ScoutAgent(BaseAgent):
         "competitor_comparator": CompetitorRankComparator,
         "local_tracker": LocalSERPTracker,           # Geo-specific rankings
         "rank_store": RankSnapshotStore,              # Historical position data
-        "serpapi_client": SerpAPIClient,              # Primary SERP data source
+        "dataforseo_client": DataForSEOClient,              # Primary SERP data source
     }
 ```
 
@@ -1589,9 +1589,9 @@ FUNCTION track_rankings(keyword_batch, engines, location=None):
         engine_results = {}
 
         FOR EACH engine IN engines:
-            # SerpAPI call per engine
-            serp_data = serpapi_search(
-                engine=engine_to_serpapi_engine(engine),  # "google", "bing", "yandex", "naver"
+            # DataForSEO SERP API call per engine
+            serp_data = dataforseo_serp_search(
+                engine=engine,  # "google", "bing", "yandex", "naver"
                 q=keyword,
                 gl=location or "us",
                 hl="en",
@@ -1654,15 +1654,15 @@ FUNCTION track_rankings(keyword_batch, engines, location=None):
 class ScoutExecutionLayer:
     """Exact API calls for Rank Agent."""
 
-    # --- SerpAPI: Google SERP ---
+    # --- DataForSEO: Google SERP ---
     def google_serp(self, keyword: str, location: str = "us", num: int = 100) -> dict:
-        """GET https://serpapi.com/search?engine=google"""
+        """POST https://api.dataforseo.com/v3/serp/google/organic/live/regular"""
         response = httpx.get(
-            "https://serpapi.com/search",
+            "https://api.dataforseo.com/v3/serp/google/organic/live/regular",
             params={
                 "engine": "google",
                 "q": keyword,
-                "api_key": self.serpapi_key,
+                "login": self.dataforseo_login,
                 "num": num,
                 "gl": location,
                 "hl": "en",
@@ -1671,44 +1671,44 @@ class ScoutExecutionLayer:
         )
         return response.json()
 
-    # --- SerpAPI: Bing SERP ---
+    # --- DataForSEO: Bing SERP ---
     def bing_serp(self, keyword: str, location: str = "us") -> dict:
-        """GET https://serpapi.com/search?engine=bing"""
+        """POST https://api.dataforseo.com/v3/serp/bing/organic/live/regular"""
         response = httpx.get(
-            "https://serpapi.com/search",
+            "https://api.dataforseo.com/v3/serp/bing/organic/live/regular",
             params={
                 "engine": "bing",
                 "q": keyword,
-                "api_key": self.serpapi_key,
+                "login": self.dataforseo_login,
                 "cc": location,
             },
             timeout=30,
         )
         return response.json()
 
-    # --- SerpAPI: Yandex SERP ---
+    # --- DataForSEO: Yandex SERP ---
     def yandex_serp(self, keyword: str) -> dict:
-        """GET https://serpapi.com/search?engine=yandex"""
+        """POST https://api.dataforseo.com/v3/serp/yandex/organic/live/regular"""
         response = httpx.get(
-            "https://serpapi.com/search",
+            "https://api.dataforseo.com/v3/serp/" + engine + "/organic/live/regular",
             params={
                 "engine": "yandex",
                 "text": keyword,
-                "api_key": self.serpapi_key,
+                "login": self.dataforseo_login,
             },
             timeout=30,
         )
         return response.json()
 
-    # --- SerpAPI: Naver SERP ---
+    # --- DataForSEO: Naver SERP ---
     def naver_serp(self, keyword: str) -> dict:
-        """GET https://serpapi.com/search?engine=naver"""
+        """POST https://api.dataforseo.com/v3/serp/naver/organic/live/regular"""
         response = httpx.get(
-            "https://serpapi.com/search",
+            "https://api.dataforseo.com/v3/serp/" + engine + "/organic/live/regular",
             params={
                 "engine": "naver",
                 "query": keyword,
-                "api_key": self.serpapi_key,
+                "login": self.dataforseo_login,
             },
             timeout=30,
         )
@@ -1736,13 +1736,13 @@ class ScoutExecutionLayer:
 
     # --- Local SERP Tracking ---
     def local_serp(self, keyword: str, location: str, engine: str = "google") -> dict:
-        """SerpAPI with location parameter for local pack tracking."""
+        """DataForSEO with location parameter for local pack tracking."""
         response = httpx.get(
-            "https://serpapi.com/search",
+            "https://api.dataforseo.com/v3/serp/" + engine + "/organic/live/regular",
             params={
                 "engine": engine,
                 "q": keyword,
-                "api_key": self.serpapi_key,
+                "login": self.dataforseo_login,
                 "location": location,  # e.g., "Austin, Texas, United States"
                 "gl": "us",
                 "hl": "en",
@@ -1759,21 +1759,21 @@ class ScoutExecutionLayer:
 | CPU | 2 cores | Parsing is lightweight |
 | Memory | 1 GB | SERP snapshots in memory |
 | Time | 1 keyword × 1 engine: ≤5s, 1000 keywords × 4 engines: ≤3 hours | |
-| API Quota | SerpAPI: 5000 req/month | Budget across all engines |
+| API Quota | DataForSEO: 2000 req/min | Budget across all engines |
 
 ### 5.6 Error Handling
 
 ```python
 class ScoutErrorHandler:
     retry_policy = {
-        "serpapi_rate_limit":   {"backoff": "exponential", "base_delay": 60, "max_retries": 5},
-        "serpapi_error":        {"backoff": "exponential", "base_delay": 10, "max_retries": 3},
+        "dataforseo_rate_limit":   {"backoff": "exponential", "base_delay": 60, "max_retries": 5},
+        "dataforseo_error":        {"backoff": "exponential", "base_delay": 10, "max_retries": 3},
         "gsc_quota":            {"backoff": "linear", "base_delay": 60, "max_retries": 3},
         "parse_error":          {"backoff": "none", "max_retries": 1},
     }
 
     fallback_strategies = {
-        "serpapi_unavailable":   "use_cached_ranks + delay_tracking",
+        "dataforseo_unavailable":   "use_cached_ranks + delay_tracking",
         "engine_unavailable":    "skip_engine + track_remaining",
         "parse_failure":         "store_raw_response + retry_parse_later",
     }
@@ -1815,8 +1815,8 @@ scout:
     radius_miles: 25
 
   api_budget:
-    serpapi_monthly_limit: 5000
-    serpapi_reserve_for_alerts: 500  # Reserve for alert-triggered checks
+    dataforseo_monthly_limit: 5000
+    dataforseo_reserve_for_alerts: 500  # Reserve for alert-triggered checks
     engine_distribution:
       google: 0.60
       bing: 0.25
@@ -1839,11 +1839,11 @@ scout_metrics:
     - average_position
     - keywords_in_top10_percent
     - keywords_in_top3_percent
-    - serpapi_quota_remaining_monthly
+    - dataforseo_quota_remaining_monthly
 
   alerts:
-    - name: "serpapi_quota_low"
-      condition: "serpapi_quota_remaining_monthly < 500"
+    - name: "dataforseo_quota_low"
+      condition: "dataforseo_quota_remaining_monthly < 500"
       severity: "warning"
     - name: "massive_rank_drop"
       condition: "rank_drops_detected_24h > 50"
@@ -1883,7 +1883,7 @@ scout_metrics:
 │  │  │ Tracker       │  │ (Send/Track) │  │ Engine       │  │ Verifier   │ ││
 │  │  │              │  │              │  │              │  │            │ ││
 │  │  │ 6 States:    │  │ OAuth2       │  │ Sequences    │  │ HTTP check │ ││
-│  │  │ prospecting  │  │ Templates    │  │ Scheduling   │  │ Ahrefs     │ ││
+│  │  │ prospecting  │  │ Templates    │  │ Scheduling   │  │DataForSEO  │ ││
 │  │  │ outreach_sent│  │ Tracking     │  │ Escalation   │  │ Verification││
 │  │  │ follow_up_1  │  │ Webhooks     │  │ Limits       │  │            │ ││
 │  │  │ follow_up_2  │  │              │  │              │  │            │ ││
@@ -1960,7 +1960,7 @@ class OutreachAgent(BaseAgent):
         # External APIs
         "exa_client": ExaClient,
         "tavily_client": TavilyClient,
-        "ahrefs_client": AhrefsClient,
+        "dataforseo_client": DataForSEOClient,
     }
 
     # Campaign Status States
@@ -2078,8 +2078,8 @@ FUNCTION broken_link_building_pipeline(niche_keywords, target_domains=None):
         domains = [r.url for r in authority_results]
 
     FOR EACH domain IN domains:
-        # Use Ahrefs to find broken outbound links
-        ahrefs_broken = ahrefs_get_broken_links(
+        # Use DataForSEO to find broken outbound links
+        dataforseo_broken = dataforseo_get_broken_links(
             target=domain,
             mode="subdomains",
         )
@@ -2090,7 +2090,7 @@ FUNCTION broken_link_building_pipeline(niche_keywords, target_domains=None):
             page_broken = crawl_and_check_links(page.url)
             broken_links.extend(page_broken)
 
-        broken_links.extend(ahrefs_broken)
+        broken_links.extend(dataforseo_broken)
 
     # STEP 2: Filter for Linkable Opportunities
     opportunities = []
@@ -2183,7 +2183,7 @@ FUNCTION guest_post_outreach_pipeline(niche, target_count=50):
             # Verify it's actually a guest post page
             is_gp_page = verify_guest_post_page(result.url)
             IF is_gp_page:
-                domain_dr = ahrefs_get_domain_rating(extract_domain(result.url))
+                domain_dr = dataforseo_get_domain_rank(extract_domain(result.url))
                 targets.append({
                     "url": result.url,
                     "domain": extract_domain(result.url),
@@ -2277,7 +2277,7 @@ FUNCTION unlinked_mention_pipeline():
                         "domain": extract_domain(mention.url),
                         "mention_text": mention.text,
                         "context": mention.context,
-                        "domain_rating": ahrefs_get_domain_rating(extract_domain(mention.url)),
+                        "domain_rank": dataforseo_get_domain_rank(extract_domain(mention.url)),
                     })
 
     # Sort by DR
@@ -2408,25 +2408,25 @@ FUNCTION verify_link_placement(campaign):
             "is_correct_page": link_found.href == expected_target,
         }
     ELSE:
-        # Method 2: Ahrefs backlink check (may have indexing delay)
-        ahrefs_check = ahrefs_check_backlink(
+        # Method 2: DataForSEO backlink check (may have indexing delay)
+        dataforseo_check = dataforseo_check_backlink(
             target=target_url,
             source=our_domain,
         )
 
-        IF ahrefs_check.found:
+        IF dataforseo_check.found:
             verification = {
-                "status": "live_ahrefs_only",
-                "anchor_text": ahrefs_check.anchor,
-                "target_url": ahrefs_check.target_url,
-                "is_nofollow": ahrefs_check.is_nofollow,
-                "first_seen": ahrefs_check.first_seen,
+                "status": "live_dataforseo_only",
+                "anchor_text": dataforseo_check.anchor,
+                "target_url": dataforseo_check.target_url,
+                "is_nofollow": dataforseo_check.is_nofollow,
+                "first_seen": dataforseo_check.first_seen,
             }
         ELSE:
             verification = {"status": "not_found"}
 
     # Update campaign status
-    IF verification["status"] IN ["live", "live_ahrefs_only"]:
+    IF verification["status"] IN ["live", "live_dataforseo_only"]:
         campaign.status = "acquired"
         campaign.verified_at = now()
         campaign.link_details = verification
@@ -2585,14 +2585,14 @@ class OutreachExecutionLayer:
         )
         return response.json()
 
-    # === AHREFS API ===
+    # === DATAFORSEO BACKLINKS API ===
 
-    def ahrefs_get_backlinks(self, target: str, mode: str = "subdomains") -> dict:
-        """GET https://apiv2.ahrefs.com?mode=backlinks"""
+    def dataforseo_get_backlinks(self, target: str, mode: str = "subdomains") -> dict:
+        """POST https://api.dataforseo.com/v3/backlinks/backlinks/live"""
         response = httpx.get(
-            "https://apiv2.ahrefs.com",
+            "https://api.dataforseo.com/v3/backlinks",
             params={
-                "token": self.ahrefs_api_key,
+                "password": self.dataforseo_password,
                 "target": target,
                 "mode": mode,
                 "limit": 1000,
@@ -2602,12 +2602,12 @@ class OutreachExecutionLayer:
         )
         return response.json()
 
-    def ahrefs_get_domain_rating(self, domain: str) -> int:
-        """GET https://apiv2.ahrefs.com?mode=domain-rating"""
+    def dataforseo_get_domain_rank(self, domain: str) -> float:
+        """POST https://api.dataforseo.com/v3/backlinks/summary/live"""
         response = httpx.get(
-            "https://apiv2.ahrefs.com",
+            "https://api.dataforseo.com/v3/backlinks",
             params={
-                "token": self.ahrefs_api_key,
+                "password": self.dataforseo_password,
                 "target": domain,
                 "mode": "domain-rating",
                 "output": "json",
@@ -2616,12 +2616,12 @@ class OutreachExecutionLayer:
         )
         return response.json().get("domain_rating", 0)
 
-    def ahrefs_get_broken_links(self, target: str, mode: str = "subdomains") -> list:
-        """GET https://apiv2.ahrefs.com?mode=broken-backlinks"""
+    def dataforseo_get_broken_links(self, target: str, mode: str = "subdomains") -> list:
+        """POST https://api.dataforseo.com/v3/backlinks/broken_backlinks/live"""
         response = httpx.get(
-            "https://apiv2.ahrefs.com",
+            "https://api.dataforseo.com/v3/backlinks",
             params={
-                "token": self.ahrefs_api_key,
+                "password": self.dataforseo_password,
                 "target": target,
                 "mode": "broken-backlinks",
                 "limit": 500,
@@ -2631,9 +2631,9 @@ class OutreachExecutionLayer:
         )
         return response.json().get("backlinks", [])
 
-    def ahrefs_check_backlink(self, target: str, source: str) -> dict:
-        """Check if a specific backlink exists via Ahrefs."""
-        backlinks = self.ahrefs_get_backlinks(target, mode="exact")
+    def dataforseo_check_backlink(self, target: str, source: str) -> dict:
+        """Check if a specific backlink exists via DataForSEO."""
+        backlinks = self.dataforseo_get_backlinks(target, mode="exact")
         for bl in backlinks.get("backlinks", []):
             if source in bl.get("url_from", ""):
                 return {
@@ -2653,7 +2653,7 @@ class OutreachExecutionLayer:
 | CPU | 4 cores | LLM-intensive for pitch/response generation |
 | Memory | 4 GB | Campaign data + research buffers |
 | Time | Full pipeline run: ≤2 hours | Per campaign: ≤5 min |
-| API Quota | Gmail: 250/day (consumer), Exa: 1000/min, Ahrefs: 500/hr, Tavily: 1000/day | |
+| API Quota | Gmail: 250/day (consumer), Exa: 1000/min, DataForSEO: 2000/min, Tavily: 1000/day | |
 | Daily Emails | Max 50 outreach emails/day | Configurable, respects Gmail limits |
 
 ### 6.10 Error Handling
@@ -2665,7 +2665,7 @@ class OutreachErrorHandler:
         "gmail_auth_expired": {"action": "refresh_oauth_token", "max_retries": 2},
         "gmail_send_failed":  {"backoff": "exponential", "base_delay": 60, "max_retries": 3},
         "exa_error":          {"backoff": "exponential", "base_delay": 10, "max_retries": 3},
-        "ahrefs_quota":       {"backoff": "linear", "base_delay": 3600, "max_retries": 3},
+        "dataforseo_quota":       {"backoff": "linear", "base_delay": 3600, "max_retries": 3},
         "tavily_error":       {"backoff": "exponential", "base_delay": 10, "max_retries": 3},
         "contact_not_found":  {"action": "try_alternative_methods", "max_retries": 2},
         "verification_failed":{"backoff": "linear", "base_delay": 86400, "max_retries": 7},  # Wait 1 day between checks
@@ -2674,7 +2674,7 @@ class OutreachErrorHandler:
     fallback_strategies = {
         "gmail_unavailable":     "queue_emails + retry_later",
         "exa_unavailable":       "fallback_to_tavily_search",
-        "ahrefs_unavailable":    "skip_backlink_verification + use_http_check",
+        "dataforseo_unavailable":    "skip_backlink_verification + use_http_check",
         "contact_not_found_any": "mark_prospect_as_unreachable + move_to_dead",
         "llm_unavailable":       "use_template_pitches + flag_for_human_review",
     }
@@ -2745,13 +2745,13 @@ outreach:
     check_after_days: 3
     recheck_interval_days: 1
     max_rechecks: 7
-    methods: ["direct_http", "ahrefs"]
+    methods: ["direct_http", "dataforseo"]
 
   rate_limits:
     emails_per_hour: 10
     emails_per_day: 50
     exa_searches_per_hour: 100
-    ahrefs_queries_per_hour: 50
+    dataforseo_queries_per_hour: 50
 ```
 
 ### 6.12 Monitoring
@@ -2840,8 +2840,8 @@ class CompetitorAgent(BaseAgent):
         "gap_identifier": GapIdentifier,
         "exa_client": ExaClient,
         "tavily_client": TavilyClient,
-        "ahrefs_client": AhrefsClient,
-        "serpapi_client": SerpAPIClient,
+        "dataforseo_client": DataForSEOClient,
+        "dataforseo_client": DataForSEOClient,
     }
 ```
 
@@ -2905,7 +2905,7 @@ FUNCTION detect_keyword_stealing(competitors):
 
     FOR EACH keyword IN our_keywords:
         # Get current SERP data
-        serp = serpapi_search(engine="google", q=keyword, num=20)
+        serp = dataforseo_serp_search(engine="google", keyword=keyword, depth=20)
 
         our_pos = find_position(serp, our_domain)
 
@@ -2937,7 +2937,7 @@ FUNCTION detect_keyword_stealing(competitors):
 FUNCTION analyze_competitor_backlinks(competitors):
     FOR EACH competitor IN competitors:
         # Get new backlinks
-        new_links = ahrefs_get_new_backlinks(
+        new_links = dataforseo_get_new_backlinks(
             target=competitor.domain,
             since=yesterday,
         )
@@ -2977,7 +2977,7 @@ FUNCTION analyze_competitor_backlinks(competitors):
 
 ```python
 class CompetitorExecutionLayer:
-    """API calls for Competitor Agent — reuses Exa, Tavily, Ahrefs, SerpAPI."""
+    """API calls for Competitor Agent — reuses Exa, Tavily, DataForSEO."""
 
     def exa_search(self, query: str, **kwargs) -> dict:
         """POST https://api.exa.ai/search"""
@@ -2998,12 +2998,12 @@ class CompetitorExecutionLayer:
         )
         return response.json()
 
-    def ahrefs_get_new_backlinks(self, target: str, since: str) -> list:
-        """GET https://apiv2.ahrefs.com?mode=new-backlinks"""
+    def dataforseo_get_new_backlinks(self, target: str, since: str) -> list:
+        """POST https://api.dataforseo.com/v3/backlinks/backlinks/live"""
         response = httpx.get(
-            "https://apiv2.ahrefs.com",
+            "https://api.dataforseo.com/v3/backlinks",
             params={
-                "token": self.ahrefs_api_key,
+                "password": self.dataforseo_password,
                 "target": target,
                 "mode": "new-backlinks",
                 "date": since,
@@ -3014,12 +3014,12 @@ class CompetitorExecutionLayer:
         )
         return response.json().get("backlinks", [])
 
-    def ahrefs_get_refdomains(self, target: str) -> list:
-        """GET https://apiv2.ahrefs.com?mode=refdomains"""
+    def dataforseo_get_refdomains(self, target: str) -> list:
+        """POST https://api.dataforseo.com/v3/backlinks/referring_domains/live"""
         response = httpx.get(
-            "https://apiv2.ahrefs.com",
+            "https://api.dataforseo.com/v3/backlinks",
             params={
-                "token": self.ahrefs_api_key,
+                "password": self.dataforseo_password,
                 "target": target,
                 "mode": "refdomains",
                 "limit": 500,
@@ -3029,11 +3029,11 @@ class CompetitorExecutionLayer:
         )
         return response.json().get("refdomains", [])
 
-    def serpapi_search(self, engine: str, q: str, **kwargs) -> dict:
-        """GET https://serpapi.com/search"""
+    def dataforseo_serp_search(self, engine: str, q: str, **kwargs) -> dict:
+        """POST https://api.dataforseo.com/v3/serp/{engine}/organic/live/regular"""
         response = httpx.get(
-            "https://serpapi.com/search",
-            params={"engine": engine, "q": q, "api_key": self.serpapi_key, "num": kwargs.get("num", 20)},
+            "https://api.dataforseo.com/v3/serp/" + engine + "/organic/live/regular",
+            params={"engine": engine, "q": q, "login": self.dataforseo_login, "num": kwargs.get("num", 20)},
             timeout=30,
         )
         return response.json()
@@ -3046,7 +3046,7 @@ class CompetitorExecutionLayer:
 | CPU | 2 cores | Analysis is API-heavy |
 | Memory | 2 GB | Competitor data caches |
 | Time | Full competitor scan: ≤1 hour | |
-| API Quota | Exa/Tavily/Ahrefs/SerpAPI shared with other agents | |
+| API Quota | Exa/Tavily/DataForSEO shared with other agents | |
 
 ### 7.6 Error Handling
 
@@ -3054,8 +3054,8 @@ class CompetitorExecutionLayer:
 class CompetitorErrorHandler:
     retry_policy = {
         "exa_error":     {"backoff": "exponential", "base_delay": 10, "max_retries": 3},
-        "ahrefs_quota":  {"backoff": "linear", "base_delay": 3600, "max_retries": 3},
-        "serpapi_quota": {"backoff": "linear", "base_delay": 3600, "max_retries": 3},
+        "dataforseo_quota":  {"backoff": "linear", "base_delay": 3600, "max_retries": 3},
+        "dataforseo_quota": {"backoff": "linear", "base_delay": 3600, "max_retries": 3},
     }
     dead_letter_queue = {"queue_name": "competitor:dlq", "max_size": 2000, "ttl_days": 30}
 ```
@@ -3250,23 +3250,23 @@ class ResourceAllocator:
     """Allocate API budgets, compute time, and LLM tokens across agents."""
 
     daily_budgets = {
-        "serpapi_requests": 167,          # 5000/month ÷ 30
+        "dataforseo_requests": 2000,          # 5000/month ÷ 30
         "gmail_sends": 50,
         "exa_requests": 1000,
         "tavily_requests": 1000,
-        "ahrefs_requests": 500,
+        "dataforseo_requests": 2000,
         "pagespeed_requests": 1000,
         "gsc_requests": 5000,
         "llm_tokens": 100000,
     }
 
     agent_allocations = {
-        "sentinel": {"serpapi": 0.05, "gsc": 0.40, "pagespeed": 0.10},
-        "forge":    {"serpapi": 0.20, "exa": 0.40, "tavily": 0.50, "llm": 0.50, "gsc": 0.20},
+        "sentinel": {"dataforseo": 0.05, "gsc": 0.40, "pagespeed": 0.10},
+        "forge":    {"dataforseo": 0.20, "exa": 0.40, "tavily": 0.50, "llm": 0.50, "gsc": 0.20},
         "technical":{"pagespeed": 0.80, "gsc": 0.20},
-        "scout":    {"serpapi": 0.60, "gsc": 0.10},
-        "outreach": {"gmail": 1.00, "exa": 0.40, "tavily": 0.30, "ahrefs": 0.50, "llm": 0.30},
-        "competitor":{"exa": 0.20, "tavily": 0.20, "ahrefs": 0.50, "serpapi": 0.15},
+        "scout":    {"dataforseo": 0.60, "gsc": 0.10},
+        "outreach": {"gmail": 1.00, "exa": 0.40, "tavily": 0.30, "dataforseo": 0.50, "llm": 0.30},
+        "competitor":{"exa": 0.20, "tavily": 0.20, "dataforseo": 0.50, "dataforseo": 0.15},
     }
 
     def allocate(self, agent: str, api: str, requested: int) -> int:
@@ -3364,11 +3364,11 @@ decision_engine:
 
   resource_allocation:
     daily_budgets:
-      serpapi_requests: 167
+      dataforseo_requests: 167
       gmail_sends: 50
       exa_requests: 1000
       tavily_requests: 1000
-      ahrefs_requests: 500
+      dataforseo_requests: 500
       pagespeed_requests: 1000
       gsc_requests: 5000
       llm_tokens: 100000

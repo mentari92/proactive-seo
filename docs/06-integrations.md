@@ -16,11 +16,10 @@
 8. [Gmail API (Outreach Execution)](#8-gmail-api-outreach-execution)
 9. [Exa AI](#9-exa-ai)
 10. [Tavily](#10-tavily)
-11. [SerpAPI](#11-serpapi)
-12. [Ahrefs API](#12-ahrefs-api)
-13. [PageSpeed Insights API](#13-pagespeed-insights-api)
-14. [CMS Integrations](#14-cms-integrations)
-15. [Notification Integrations](#15-notification-integrations)
+11. [DataForSEO](#11-dataforseo)
+12. [PageSpeed Insights API](#12-pagespeed-insights-api)
+13. [CMS Integrations](#13-cms-integrations)
+14. [Notification Integrations](#14-notification-integrations)
 
 ---
 
@@ -2603,328 +2602,223 @@ class TavilyClient:
 
 ---
 
-## 11. SerpAPI
+## 11. DataForSEO
 
 ### 11.1 Auth Method & Setup
 
-**API Key (Query Parameter)**
+**API Key + HTTP Basic Auth**
 
 | Field | Value |
 |-------|-------|
-| **Key Location** | SerpAPI Dashboard → API Key |
-| **Auth Method** | `api_key` query parameter |
-| **Base URL** | `https://serpapi.com` |
-| **Docs** | `https://serpapi.com/search-api` |
+| **Key Location** | DataForSEO Dashboard → API → Login & Password |
+| **Auth Method** | HTTP Basic Auth (`login:password` base64-encoded in `Authorization` header) |
+| **Base URL** | `https://api.dataforseo.com` |
+| **Docs** | `https://dataforseo.com/apis` |
+| **Cost** | $0.0006/keyword, $0.002/SERP, $0.01/backlink request |
 
-### 11.2 Endpoints Used
+DataForSEO consolidates SERP tracking, keyword research, backlink analysis, on-page auditing, and content NLP into a single unified API — replacing both SerpAPI and Ahrefs at a fraction of the cost.
 
-| Endpoint | Engine | Purpose |
+### 11.2 Sub-APIs & Endpoints
+
+#### 11.2.1 SERP API — Rank Tracking & SERP Analysis
+
+| Endpoint | Method | Purpose |
 |----------|--------|---------|
-| `GET /search?engine=google` | Google | Google SERP |
-| `GET /search?engine=google_maps` | Google Maps | Local pack |
-| `GET /search?engine=bing` | Bing | Bing SERP |
-| `GET /search?engine=yandex` | Yandex | Yandex SERP |
-| `GET /search?engine=naver` | Naver | Naver SERP |
-| `GET /search?engine=google_scholar` | Scholar | Academic search |
-| `GET /search?engine=google_trends` | Trends | Search trends |
-| `GET /search?engine=google_autocomplete` | Autocomplete | Query suggestions |
+| `POST /v3/serp/google/organic/live/regular` | POST | Google organic SERP (live) |
+| `POST /v3/serp/google/organic/task_post` | POST | Google organic SERP (async) |
+| `POST /v3/serp/bing/organic/live/regular` | POST | Bing organic SERP (live) |
+| `POST /v3/serp/yandex/organic/live/regular` | POST | Yandex organic SERP (live) |
+| `POST /v3/serp/naver/organic/live/regular` | POST | Naver organic SERP (live) |
+| `POST /v3/serp/google/maps/live/regular` | POST | Google Maps / local pack |
+| `POST /v3/serp/google/organic/live/regular` | POST | With `depth` param for extended results |
+| `GET /v3/serp/ai_overview` | GET | Google AI Overview data |
+
+**Rate Limits:** 2,000 tasks/minute (live), 100,000 tasks/day (async). No per-engine limits.
+
+#### 11.2.2 Keywords API — Keyword Research & Metrics
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `POST /v3/keywords_data/google_ads/search_volume/live` | POST | Search volume, CPC, competition |
+| `POST /v3/keywords_data/google_ads/keywords_for_keywords/live` | POST | Related keyword suggestions |
+| `POST /v3/keywords_data/google_ads/keywords_for_site/live` | POST | Keywords a site ranks for |
+| `POST /v3/keywords_data/google_ads/ad_traffic_by_keywords/live` | POST | Traffic estimates for keywords |
+| `POST /v3/keywords_data/google_trends/explore/live` | POST | Google Trends data |
+
+**Rate Limits:** 2,000 tasks/minute, $0.0006 per keyword.
+
+#### 11.2.3 Backlinks API — Link Analysis (Replaces Ahrefs)
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `POST /v3/backlinks/summary/live` | POST | Domain/URL backlink summary (DR, backlinks, ref domains) |
+| `POST /v3/backlinks/backlinks/live` | POST | Full backlink list with anchors, DR, first/last seen |
+| `POST /v3/backlinks/referring_domains/live` | POST | Referring domains with DR |
+| `POST /v3/backlinks/anchors/live` | POST | Anchor text distribution |
+| `POST /v3/backlinks/domain_pages/live` | POST | Top pages by backlinks |
+| `POST /v3/backlinks/domain_pages_overview/live` | POST | Pages overview (new/lost backlinks) |
+| `POST /v3/backlinks/history/live` | POST | Backlink growth/loss over time |
+| `POST /v3/backlinks/broken_backlinks/live` | POST | Broken outbound/inbound links |
+| `POST /v3/backlinks/competitors/live` | POST | Competing domains by backlink profile |
+| `POST /v3/backlinks/domain_intersection/live` | POST | Shared backlinks between domains |
+| `POST /v3/backlinks/same_errors/live` | POST | Domains with similar link errors |
+| `POST /v3/backlinks/linking_redirects/live` | POST | Redirect chains in backlinks |
+
+**Rate Limits:** 2,000 tasks/minute. $0.01 per backlinks request (includes up to 1,000 results).
+
+#### 11.2.4 On-Page API — Technical Audit & Content Analysis
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `POST /v3/on_page/task_post` | POST | Create on-page audit task |
+| `GET /v3/on_page/summary/{id}` | GET | Audit summary (issues, scores) |
+| `POST /v3/on_page/pages` | POST | Page-level audit data |
+| `POST /v3/on_page/resources` | POST | Resource loading analysis |
+| `POST /v3/on_page/links` | POST | Internal/external link analysis |
+| `POST /v3/on_page/duplicate_tags` | POST | Duplicate meta tags detection |
+| `POST /v3/on_page/non_indexable` | POST | Non-indexable pages |
+| `POST /v3/on_page/audios` | POST | Audio resource detection |
+| `POST /v3/on_page/videos` | POST | Video resource detection |
+| `POST /v3/on_page/redirect_chains` | POST | Redirect chain analysis |
+
+**Rate Limits:** 2,000 tasks/minute. $0.002 per page audited.
+
+#### 11.2.5 Content Analysis API — NLP & Content Optimization
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `POST /v3/content_analysis/search` | POST | Search content by topic/entity |
+| `POST /v3/content_analysis/summary` | POST | Content summary with NLP entities |
+| `POST /v3/content_analysis/phrase_trends` | POST | Phrase popularity over time |
+| `POST /v3/content_analysis/categories` | POST | Content category classification |
+| `POST /v3/content_analysis/serp_content` | POST | SERP-aligned content recommendations |
+
+**Rate Limits:** 2,000 tasks/minute.
 
 ### 11.3 Data Schema
 
 ```python
 @dataclass
-class SerpResult:
+class DataForSEOSerpResult:
+    """SERP API result item."""
     position: int
     title: str
-    link: str
-    snippet: str
-    displayed_link: Optional[str]
-    cached_page_link: Optional[str]
-    related_pages_link: Optional[str]
+    url: str
+    description: str
+    domain: str
+    breadcrumb: Optional[str]
+    is_featured_snippet: bool
+    is_local_pack: bool
+    rating: Optional[float]          # For local results
+    reviews_count: Optional[int]     # For local results
 
 @dataclass
-class SerpResponse:
-    search_metadata: dict        # id, status, created_at, processed_at
-    search_parameters: dict      # engine, q, location, etc.
-    search_information: dict     # total_results, time_taken, etc.
-    organic_results: list[dict]
-    answer_box: Optional[dict]
-    knowledge_graph: Optional[dict]
-    people_also_ask: Optional[list[dict]]
-    related_searches: Optional[list[dict]]
-    local_results: Optional[list[dict]]
-    inline_images: Optional[list[dict]]
-    pagination: Optional[dict]
-```
+class DataForSEOSerpTask:
+    """SERP API task response."""
+    id: str
+    status_code: int                 # 20000 = success
+    status_message: str
+    cost: float
+    result: list[dict]               # SERP results with all features
+    se: str                          # "google", "bing", "yandex", "naver"
+    keyword: str
+    location_code: int
+    language_code: str
+    datetime: str
 
-### 11.4 Rate Limits
-
-| Limit | Value |
-|-------|-------|
-| **Searches/month** | Plan-dependent (100 free, 5,000+ paid) |
-| **Rate** | No hard per-second limit, but 429 on burst |
-| **Concurrent** | Varies by plan |
-| **Cost per search** | 1 search credit (some engines cost more) |
-
-### 11.5 Python Implementation
-
-```python
-"""
-integrations/serpapi/client.py
-SerpAPI integration for multi-engine SERP monitoring.
-"""
-
-import logging
-from typing import Optional
-
-from integrations.base.client import IntegrationHTTPClient, RetryConfig
-from integrations.base.rate_limiter import SlidingWindowRateLimiter, RateLimit
-from integrations.base.cache import ResponseCache
-
-logger = logging.getLogger(__name__)
-
-
-class SerpAPIClient:
-    """SerpAPI client for Google, Bing, Yandex, and Naver SERP data."""
-
-    PROVIDER = "serpapi"
-    BASE_URL = "https://serpapi.com"
-
-    def __init__(
-        self,
-        api_key: str,
-        rate_limiter: SlidingWindowRateLimiter,
-        cache: ResponseCache,
-    ):
-        self.api_key = api_key
-        self.rate_limiter = rate_limiter
-        self.cache = cache
-        self.client = IntegrationHTTPClient(
-            provider=self.PROVIDER,
-            base_url=self.BASE_URL,
-            retry_config=RetryConfig(max_retries=3),
-        )
-        self.rate_limiter.register(self.PROVIDER, [
-            RateLimit(requests=10, window_seconds=60),
-        ])
-
-    async def search(
-        self,
-        query: str,
-        engine: str = "google",
-        location: Optional[str] = None,
-        country: Optional[str] = None,
-        language: Optional[str] = None,
-        num: int = 10,
-        start: int = 0,
-        device: str = "desktop",
-        **kwargs,
-    ) -> dict:
-        """
-        Execute a SERP search.
-
-        Args:
-            query: Search query
-            engine: google, bing, yandex, naver, google_maps, google_scholar, etc.
-            location: Location (e.g., "Austin, Texas, United States")
-            country: Country code (e.g., "us")
-            language: Language code (e.g., "en")
-            num: Number of results
-            start: Offset
-            device: desktop or mobile
-            **kwargs: Additional engine-specific parameters
-        """
-        cache_params = {
-            "q": query, "engine": engine, "loc": location,
-            "country": country, "lang": language, "num": num, "start": start,
-        }
-        cached = await self.cache.get(self.PROVIDER, "search", cache_params)
-        if cached:
-            return cached
-
-        await self.rate_limiter.acquire(self.PROVIDER)
-
-        params = {
-            "api_key": self.api_key,
-            "q": query,
-            "engine": engine,
-            "num": num,
-            "start": start,
-            "device": device,
-        }
-        if location:
-            params["location"] = location
-        if country:
-            params["gl"] = country
-        if language:
-            params["hl"] = language
-        params.update(kwargs)
-
-        resp = await self.client.request("GET", "/search", params=params)
-        data = resp.json()
-
-        await self.cache.set(self.PROVIDER, "search", data, ttl=7200, params=cache_params)
-        return data
-
-    async def google_serp(
-        self,
-        query: str,
-        location: Optional[str] = None,
-        num: int = 10,
-    ) -> dict:
-        """Google SERP with all features (PAA, featured snippets, knowledge panel)."""
-        return await self.search(
-            query=query, engine="google", location=location, num=num,
-        )
-
-    async def bing_serp(self, query: str, num: int = 10) -> dict:
-        """Bing SERP."""
-        return await self.search(query=query, engine="bing", num=num)
-
-    async def yandex_serp(self, query: str, num: int = 10) -> dict:
-        """Yandex SERP."""
-        return await self.search(query=query, engine="yandex", num=num)
-
-    async def naver_serp(self, query: str, num: int = 10) -> dict:
-        """Naver SERP."""
-        return await self.search(query=query, engine="naver", num=num)
-
-    async def extract_serp_features(self, serp_data: dict) -> dict:
-        """Extract SERP features from raw response."""
-        return {
-            "answer_box": serp_data.get("answer_box"),
-            "knowledge_graph": serp_data.get("knowledge_graph"),
-            "people_also_ask": [
-                q.get("question", "")
-                for q in serp_data.get("people_also_ask", [])
-            ],
-            "featured_snippet": self._extract_featured_snippet(serp_data),
-            "local_pack": serp_data.get("local_results", []),
-            "related_searches": [
-                r.get("query", "")
-                for r in serp_data.get("related_searches", [])
-            ],
-            "sitelinks": self._extract_sitelinks(serp_data),
-            "top_stories": serp_data.get("top_stories", []),
-            "shopping_results": serp_data.get("shopping_results", []),
-            "inline_images": serp_data.get("inline_images", []),
-        }
-
-    def _extract_featured_snippet(self, data: dict) -> Optional[dict]:
-        """Extract featured snippet from various locations in response."""
-        ab = data.get("answer_box", {})
-        if ab and ab.get("type") == "featured_snippet":
-            return {
-                "title": ab.get("title", ""),
-                "snippet": ab.get("snippet", ""),
-                "link": ab.get("link", ""),
-                "source": ab.get("displayed_link", ""),
-            }
-        return None
-
-    def _extract_sitelinks(self, data: dict) -> list[dict]:
-        """Extract sitelinks from organic results."""
-        sitelinks = []
-        for result in data.get("organic_results", []):
-            sl = result.get("sitelinks", {})
-            if sl:
-                for inline in sl.get("inline", []):
-                    sitelinks.append({
-                        "title": inline.get("title", ""),
-                        "link": inline.get("link", ""),
-                    })
-        return sitelinks
-
-    async def close(self) -> None:
-        await self.client.close()
-```
-
----
-
-## 12. Ahrefs API
-
-### 12.1 Auth Method & Setup
-
-**API Key (Bearer Token)**
-
-| Field | Value |
-|-------|-------|
-| **Key Location** | Ahrefs Account → API → Generate Token |
-| **Auth Method** | `Authorization: Bearer <api_key>` |
-| **Base URL** | `https://api.ahrefs.com/v3` |
-| **Docs** | `https://ahrefs.com/api/v3/doc` |
-
-### 12.2 Endpoints Used
-
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `GET /site-explorer/overview` | GET | Domain/url overview |
-| `GET /site-explorer/backlinks` | GET | Backlink profile |
-| `GET /site-explorer/referring-domains` | GET | Referring domains |
-| `GET /site-explorer/organic-keywords` | GET | Ranking keywords |
-| `GET /site-explorer/organic-traffic` | GET | Traffic estimates |
-| `GET /site-explorer/best-by-links` | GET | Top pages by backlinks |
-| `GET /site-explorer/top-pages` | GET | Top pages by traffic |
-| `GET /keywords-explorer/overview` | GET | Keyword metrics |
-| `GET /keywords-explorer/keyword-difficulty` | GET | KD score |
-| `GET /keywords-explorer/search-volume` | GET | Volume history |
-
-### 12.3 Data Schema
-
-```python
 @dataclass
-class AhrefsBacklink:
+class DataForSEOKeyword:
+    """Keywords API result item."""
+    keyword: str
+    search_volume: int
+    cpc: float
+    competition: float               # 0.0-1.0
+    competition_level: str           # "LOW", "MEDIUM", "HIGH"
+    monthly_searches: list[dict]     # [{"year": 2026, "month": 1, "search_volume": 5400}]
+    keyword_difficulty: Optional[int]
+
+@dataclass
+class DataForSEOBacklink:
+    """Backlinks API result item."""
     url_from: str
     url_to: str
     anchor: str
     first_seen: str
     last_seen: str
-    nofollow: bool
-    domain_rating: float
-    url_rating: float
-    traffic: int
-    referring_domains: int
+    is_follow: bool
+    domain_from: str
+    domain_to: str
+    domain_rank: float               # DataForSEO's domain authority metric (0-100)
+    page_rank: float                 # Page-level authority (0-100)
+    backlinks_spam_score: int        # 0-100
 
 @dataclass
-class AhrefsKeyword:
-    keyword: str
-    volume: int
-    keyword_difficulty: float
-    cpc: float
-    traffic_potential: int
-    parent_topic: str
-    position: Optional[int]
-    url: Optional[str]
-
-@dataclass
-class AhrefsOverview:
-    domain_rating: float
-    ahrefs_rank: int
-    referring_domains: int
+class DataForSEODomainSummary:
+    """Backlinks API domain summary."""
+    domain_rank: float               # Domain authority (0-100)
     backlinks: int
-    organic_keywords: int
-    organic_traffic: int
-    traffic_value: float
+    referring_domains: int
+    referring_domains_nofollow: int
+    referring_main_domains: int
+    referring_pages: int
+    referring_ips: int
+    referring_subnets: int
+    broken_backlinks: int
+    broken_pages: int
+    referring_links_tld: dict        # TLD distribution
+    referring_links_types: dict      # Link type distribution
+    referring_links_attributes: dict # Anchor/text/image distribution
+    referring_links_platform_types: dict
+    referring_links_semantic_locations: dict
+
+@dataclass
+class DataForSEOOnPageSummary:
+    """On-Page API audit summary."""
+    crawl_progress: float            # 0.0-1.0
+    onpage_score: float              # 0-100
+    crawl_status: dict
+    total_pages: int
+    pages_crawled: int
+    issues: dict                     # {"critical": 3, "warning": 12, "info": 45}
+    checks: dict                     # All on-page checks with counts
+    non_indexable: dict
+    duplicate_meta: dict
+    load_speed: dict
+    slow_pages: dict
+    redirect_chains: dict
+    broken_resources: dict
 ```
 
-### 12.4 Rate Limits
+### 11.4 Rate Limits & Pricing
 
 | Limit | Value |
 |-------|-------|
-| **Requests/second** | 10 (standard), 100 (enterprise) |
-| **Monthly credits** | Plan-dependent |
-| **Credit cost** | Varies by endpoint (1-10 credits per call) |
+| **SERP API** | 2,000 tasks/min (live), 100,000/day (async) |
+| **Keywords API** | 2,000 tasks/min |
+| **Backlinks API** | 2,000 tasks/min |
+| **On-Page API** | 2,000 tasks/min |
+| **Content Analysis** | 2,000 tasks/min |
+| **Cost: SERP** | $0.002/task (Google), $0.001/task (Bing/Yandex) |
+| **Cost: Keywords** | $0.0006/keyword |
+| **Cost: Backlinks** | $0.01/request (up to 1,000 results) |
+| **Cost: On-Page** | $0.002/page crawled |
+| **Min. top-up** | $50/month |
 
-### 12.5 Python Implementation
+### 11.5 Python Implementation
 
 ```python
 """
-integrations/ahrefs/client.py
-Ahrefs API integration for backlink and keyword data.
+integrations/dataforseo/client.py
+DataForSEO API integration — unified SERP, keywords, backlinks, and on-page analysis.
+Replaces both SerpAPI (SERP tracking) and Ahrefs (backlink/keyword data).
 """
 
+import asyncio
+import base64
 import logging
 from typing import Optional
+
+import httpx
 
 from integrations.base.client import IntegrationHTTPClient, RetryConfig
 from integrations.base.rate_limiter import SlidingWindowRateLimiter, RateLimit
@@ -2933,64 +2827,294 @@ from integrations.base.cache import ResponseCache
 logger = logging.getLogger(__name__)
 
 
-class AhrefsClient:
-    """Ahrefs API client."""
+class DataForSEOClient:
+    """
+    DataForSEO API client — SERP, Keywords, Backlinks, On-Page, Content Analysis.
 
-    PROVIDER = "ahrefs"
-    BASE_URL = "https://api.ahrefs.com/v3"
+    Auth: HTTP Basic Auth (login:password from DataForSEO dashboard).
+    Consolidates SERP tracking + backlink analysis + keyword research
+    into a single integration (replaces SerpAPI + Ahrefs).
+    """
+
+    PROVIDER = "dataforseo"
+    BASE_URL = "https://api.dataforseo.com"
 
     def __init__(
         self,
-        api_key: str,
+        login: str,
+        password: str,
         rate_limiter: SlidingWindowRateLimiter,
         cache: ResponseCache,
     ):
-        self.api_key = api_key
+        self.login = login
+        self.password = password
         self.rate_limiter = rate_limiter
         self.cache = cache
+
+        # Basic Auth header
+        credentials = base64.b64encode(f"{login}:{password}".encode()).decode()
+        self._default_headers = {
+            "Authorization": f"Basic {credentials}",
+            "Content-Type": "application/json",
+        }
+
         self.client = IntegrationHTTPClient(
             provider=self.PROVIDER,
             base_url=self.BASE_URL,
-            retry_config=RetryConfig(max_retries=3),
+            retry_config=RetryConfig(max_retries=3, base_delay=2.0),
         )
+
         self.rate_limiter.register(self.PROVIDER, [
-            RateLimit(requests=10, window_seconds=1),
+            RateLimit(requests=2000, window_seconds=60),   # 2000/min global
         ])
 
-    def _headers(self) -> dict:
-        return {
-            "Authorization": f"Bearer {self.api_key}",
-            "Accept": "application/json",
-        }
+    # ========== SERP API ==========
 
-    async def get_site_overview(
+    async def serp_search(
         self,
-        target: str,
-        protocol: str = "https",
-        mode: str = "subdomains",
+        keyword: str,
+        engine: str = "google",
+        location_code: int = 2840,      # United States
+        language_code: str = "en",
+        depth: int = 10,
+        device: str = "desktop",
+        os: str = "windows",
     ) -> dict:
         """
-        Get site overview (domain rating, traffic, backlinks, etc.).
+        Live SERP search across engines.
 
         Args:
-            target: Domain or URL
-            protocol: http or https
-            mode: subdomains, domain, prefix, exact
+            keyword: Search query
+            engine: "google", "bing", "yandex", "naver"
+            location_code: DataForSEO location code (2840 = US)
+            language_code: Language code
+            depth: Number of results (10-700)
+            device: "desktop" or "mobile"
+            os: Operating system
         """
-        cache_params = {"target": target, "mode": mode}
-        cached = await self.cache.get(self.PROVIDER, "overview", cache_params)
+        cache_params = {
+            "kw": keyword, "se": engine, "loc": location_code,
+            "lang": language_code, "depth": depth, "dev": device,
+        }
+        cached = await self.cache.get(self.PROVIDER, "serp", cache_params)
         if cached:
             return cached
 
         await self.rate_limiter.acquire(self.PROVIDER)
+
+        post_data = [{
+            "keyword": keyword,
+            "location_code": location_code,
+            "language_code": language_code,
+            "depth": depth,
+            "device": device,
+            "os": os,
+        }]
+
+        endpoint = f"/v3/serp/{engine}/organic/live/regular"
         resp = await self.client.request(
-            "GET", "/site-explorer/overview",
-            headers=self._headers(),
-            params={"target": target, "protocol": protocol, "mode": mode},
+            "POST", endpoint,
+            headers=self._default_headers,
+            json=post_data,
         )
         data = resp.json()
 
-        await self.cache.set(self.PROVIDER, "overview", data, ttl=43200, params=cache_params)
+        await self.cache.set(self.PROVIDER, "serp", data, ttl=7200, params=cache_params)
+        return data
+
+    async def google_serp(
+        self,
+        keyword: str,
+        location_code: int = 2840,
+        depth: int = 10,
+    ) -> dict:
+        """Google SERP with all features (PAA, featured snippets, knowledge panel)."""
+        return await self.serp_search(
+            keyword=keyword, engine="google",
+            location_code=location_code, depth=depth,
+        )
+
+    async def bing_serp(self, keyword: str, depth: int = 10) -> dict:
+        """Bing SERP."""
+        return await self.serp_search(keyword=keyword, engine="bing", depth=depth)
+
+    async def yandex_serp(self, keyword: str, depth: int = 10) -> dict:
+        """Yandex SERP."""
+        return await self.serp_search(keyword=keyword, engine="yandex", depth=depth)
+
+    async def naver_serp(self, keyword: str, depth: int = 10) -> dict:
+        """Naver SERP."""
+        return await self.serp_search(keyword=keyword, engine="naver", depth=depth)
+
+    async def local_serp(
+        self,
+        keyword: str,
+        location_code: int = 2840,
+        language_code: str = "en",
+        depth: int = 10,
+    ) -> dict:
+        """Google Maps / local pack SERP."""
+        await self.rate_limiter.acquire(self.PROVIDER)
+        post_data = [{
+            "keyword": keyword,
+            "location_code": location_code,
+            "language_code": language_code,
+            "depth": depth,
+        }]
+        resp = await self.client.request(
+            "POST", "/v3/serp/google/maps/live/regular",
+            headers=self._default_headers,
+            json=post_data,
+        )
+        return resp.json()
+
+    async def extract_serp_features(self, serp_data: dict) -> dict:
+        """Extract SERP features from DataForSEO response."""
+        tasks = serp_data.get("tasks", [])
+        if not tasks or not tasks[0].get("result"):
+            return {}
+        result = tasks[0]["result"][0] if tasks[0]["result"] else {}
+        items = result.get("items", [])
+        return {
+            "featured_snippet": next(
+                (i for i in items if i.get("type") == "featured_snippet"), None
+            ),
+            "people_also_ask": [
+                i for i in items if i.get("type") == "people_also_ask"
+            ],
+            "local_pack": [
+                i for i in items if i.get("type") in ("local_pack", "map")
+            ],
+            "knowledge_graph": next(
+                (i for i in items if i.get("type") == "knowledge_graph"), None
+            ),
+            "related_searches": [
+                i.get("keyword", "") for i in items if i.get("type") == "related_searches"
+            ],
+            "sitelinks": [
+                i for i in items if i.get("type") == "sitelinks"
+            ],
+            "top_stories": [
+                i for i in items if i.get("type") == "top_stories"
+            ],
+            "shopping_results": [
+                i for i in items if i.get("type") == "shopping"
+            ],
+        }
+
+    # ========== Keywords API ==========
+
+    async def get_keyword_metrics(
+        self,
+        keywords: list[str],
+        location_code: int = 2840,
+        language_code: str = "en",
+    ) -> dict:
+        """
+        Get keyword metrics (volume, CPC, competition, difficulty).
+
+        Args:
+            keywords: List of keywords (up to 1,000 per request)
+            location_code: DataForSEO location code
+            language_code: Language code
+        """
+        cache_params = {"kw": keywords, "loc": location_code, "lang": language_code}
+        cached = await self.cache.get(self.PROVIDER, "keyword_metrics", cache_params)
+        if cached:
+            return cached
+
+        await self.rate_limiter.acquire(self.PROVIDER)
+
+        post_data = [{
+            "keywords": keywords,
+            "location_code": location_code,
+            "language_code": language_code,
+        }]
+        resp = await self.client.request(
+            "POST", "/v3/keywords_data/google_ads/search_volume/live",
+            headers=self._default_headers,
+            json=post_data,
+        )
+        data = resp.json()
+
+        await self.cache.set(
+            self.PROVIDER, "keyword_metrics", data, ttl=86400, params=cache_params
+        )
+        return data
+
+    async def get_related_keywords(
+        self,
+        keyword: str,
+        location_code: int = 2840,
+        language_code: str = "en",
+        limit: int = 100,
+    ) -> dict:
+        """Get related keyword suggestions."""
+        await self.rate_limiter.acquire(self.PROVIDER)
+        post_data = [{
+            "keywords": [keyword],
+            "location_code": location_code,
+            "language_code": language_code,
+            "limit": limit,
+        }]
+        resp = await self.client.request(
+            "POST", "/v3/keywords_data/google_ads/keywords_for_keywords/live",
+            headers=self._default_headers,
+            json=post_data,
+        )
+        return resp.json()
+
+    async def get_site_keywords(
+        self,
+        target: str,
+        location_code: int = 2840,
+        language_code: str = "en",
+        limit: int = 100,
+    ) -> dict:
+        """Get keywords a site ranks for (Google Ads data)."""
+        await self.rate_limiter.acquire(self.PROVIDER)
+        post_data = [{
+            "target": target,
+            "location_code": location_code,
+            "language_code": language_code,
+            "limit": limit,
+        }]
+        resp = await self.client.request(
+            "POST", "/v3/keywords_data/google_ads/keywords_for_site/live",
+            headers=self._default_headers,
+            json=post_data,
+        )
+        return resp.json()
+
+    # ========== Backlinks API (Replaces Ahrefs) ==========
+
+    async def get_backlink_summary(
+        self,
+        target: str,
+        mode: str = "subdomains",  # "subdomains", "domain", "prefix"
+    ) -> dict:
+        """
+        Get domain backlink summary (domain rank, backlinks count, ref domains).
+
+        Replaces: Ahrefs get_site_overview()
+        """
+        cache_params = {"target": target, "mode": mode}
+        cached = await self.cache.get(self.PROVIDER, "backlink_summary", cache_params)
+        if cached:
+            return cached
+
+        await self.rate_limiter.acquire(self.PROVIDER)
+        post_data = [{"target": target, "mode": mode, "limit": 1}]
+        resp = await self.client.request(
+            "POST", "/v3/backlinks/summary/live",
+            headers=self._default_headers,
+            json=post_data,
+        )
+        data = resp.json()
+
+        await self.cache.set(
+            self.PROVIDER, "backlink_summary", data, ttl=43200, params=cache_params
+        )
         return data
 
     async def get_backlinks(
@@ -2999,17 +3123,26 @@ class AhrefsClient:
         mode: str = "subdomains",
         limit: int = 100,
         offset: int = 0,
-        protocol: str = "https",
+        filters: Optional[list] = None,
     ) -> dict:
-        """Get backlinks for a target."""
+        """
+        Get backlinks for a target.
+
+        Replaces: Ahrefs get_backlinks()
+        """
         await self.rate_limiter.acquire(self.PROVIDER)
+        post_data = [{
+            "target": target,
+            "mode": mode,
+            "limit": limit,
+            "offset": offset,
+        }]
+        if filters:
+            post_data[0]["filters"] = filters
         resp = await self.client.request(
-            "GET", "/site-explorer/backlinks",
-            headers=self._headers(),
-            params={
-                "target": target, "mode": mode, "protocol": protocol,
-                "limit": limit, "offset": offset,
-            },
+            "POST", "/v3/backlinks/backlinks/live",
+            headers=self._default_headers,
+            json=post_data,
         )
         return resp.json()
 
@@ -3018,88 +3151,204 @@ class AhrefsClient:
         target: str,
         mode: str = "subdomains",
         limit: int = 100,
+        offset: int = 0,
     ) -> dict:
-        """Get referring domains."""
+        """
+        Get referring domains with domain rank.
+
+        Replaces: Ahrefs get_referring_domains()
+        """
         await self.rate_limiter.acquire(self.PROVIDER)
+        post_data = [{"target": target, "mode": mode, "limit": limit, "offset": offset}]
         resp = await self.client.request(
-            "GET", "/site-explorer/referring-domains",
-            headers=self._headers(),
-            params={"target": target, "mode": mode, "limit": limit},
+            "POST", "/v3/backlinks/referring_domains/live",
+            headers=self._default_headers,
+            json=post_data,
         )
         return resp.json()
 
-    async def get_organic_keywords(
+    async def get_anchors(
         self,
         target: str,
         mode: str = "subdomains",
         limit: int = 100,
-        country: str = "us",
     ) -> dict:
-        """Get organic keywords a domain ranks for."""
+        """Get anchor text distribution."""
         await self.rate_limiter.acquire(self.PROVIDER)
+        post_data = [{"target": target, "mode": mode, "limit": limit}]
         resp = await self.client.request(
-            "GET", "/site-explorer/organic-keywords",
-            headers=self._headers(),
-            params={"target": target, "mode": mode, "limit": limit, "country": country},
+            "POST", "/v3/backlinks/anchors/live",
+            headers=self._default_headers,
+            json=post_data,
         )
         return resp.json()
-
-    async def get_keyword_metrics(
-        self,
-        keywords: list[str],
-        country: str = "us",
-    ) -> dict:
-        """
-        Get keyword metrics (volume, KD, CPC).
-
-        Args:
-            keywords: List of keywords to look up
-            country: Country code
-        """
-        cache_params = {"keywords": keywords, "country": country}
-        cached = await self.cache.get(self.PROVIDER, "keyword_metrics", cache_params)
-        if cached:
-            return cached
-
-        await self.rate_limiter.acquire(self.PROVIDER)
-        resp = await self.client.request(
-            "GET", "/keywords-explorer/overview",
-            headers=self._headers(),
-            params={"keywords": ",".join(keywords), "country": country},
-        )
-        data = resp.json()
-
-        await self.cache.set(self.PROVIDER, "keyword_metrics", data, ttl=86400, params=cache_params)
-        return data
 
     async def get_top_pages(
         self,
         target: str,
         mode: str = "subdomains",
         limit: int = 100,
-        country: str = "us",
     ) -> dict:
-        """Get top pages by traffic."""
+        """
+        Get top pages by backlinks.
+
+        Replaces: Ahrefs get_top_pages() and get_best_by_links()
+        """
         await self.rate_limiter.acquire(self.PROVIDER)
+        post_data = [{"target": target, "mode": mode, "limit": limit}]
         resp = await self.client.request(
-            "GET", "/site-explorer/top-pages",
-            headers=self._headers(),
-            params={"target": target, "mode": mode, "limit": limit, "country": country},
+            "POST", "/v3/backlinks/domain_pages/live",
+            headers=self._default_headers,
+            json=post_data,
         )
         return resp.json()
 
-    async def get_best_by_links(
+    async def get_broken_backlinks(
         self,
         target: str,
         mode: str = "subdomains",
         limit: int = 100,
     ) -> dict:
-        """Get pages with the most backlinks."""
+        """
+        Get broken backlinks.
+
+        Replaces: Ahrefs get_broken_links()
+        """
+        await self.rate_limiter.acquire(self.PROVIDER)
+        post_data = [{"target": target, "mode": mode, "limit": limit}]
+        resp = await self.client.request(
+            "POST", "/v3/backlinks/broken_backlinks/live",
+            headers=self._default_headers,
+            json=post_data,
+        )
+        return resp.json()
+
+    async def get_backlink_history(
+        self,
+        target: str,
+        mode: str = "subdomains",
+        date_from: Optional[str] = None,
+        date_to: Optional[str] = None,
+    ) -> dict:
+        """Get backlink growth/loss over time."""
+        await self.rate_limiter.acquire(self.PROVIDER)
+        post_data = [{"target": target, "mode": mode}]
+        if date_from:
+            post_data[0]["date_from"] = date_from
+        if date_to:
+            post_data[0]["date_to"] = date_to
+        resp = await self.client.request(
+            "POST", "/v3/backlinks/history/live",
+            headers=self._default_headers,
+            json=post_data,
+        )
+        return resp.json()
+
+    async def get_backlink_competitors(
+        self,
+        target: str,
+        mode: str = "subdomains",
+        limit: int = 10,
+    ) -> dict:
+        """Get competing domains by backlink profile similarity."""
+        await self.rate_limiter.acquire(self.PROVIDER)
+        post_data = [{"target": target, "mode": mode, "limit": limit}]
+        resp = await self.client.request(
+            "POST", "/v3/backlinks/competitors/live",
+            headers=self._default_headers,
+            json=post_data,
+        )
+        return resp.json()
+
+    async def get_domain_intersection(
+        self,
+        target1: str,
+        target2: str,
+        mode: str = "subdomains",
+        limit: int = 100,
+    ) -> dict:
+        """Find shared backlinks between two domains."""
+        await self.rate_limiter.acquire(self.PROVIDER)
+        post_data = [{"targets": [target1, target2], "mode": mode, "limit": limit}]
+        resp = await self.client.request(
+            "POST", "/v3/backlinks/domain_intersection/live",
+            headers=self._default_headers,
+            json=post_data,
+        )
+        return resp.json()
+
+    async def check_backlink(
+        self,
+        target: str,
+        source: str,
+    ) -> dict:
+        """
+        Check if a specific backlink exists.
+
+        Replaces: Ahrefs check_backlink()
+        """
+        backlinks = await self.get_backlinks(
+            target=target, mode="exact", limit=100,
+            filters=[["url_to", "=", source]]
+        )
+        tasks = backlinks.get("tasks", [])
+        if not tasks or not tasks[0].get("result"):
+            return {"found": False}
+        items = tasks[0]["result"][0].get("items", []) if tasks[0]["result"] else []
+        match = next((b for b in items if source in b.get("url_to", "")), None)
+        if match:
+            return {
+                "found": True,
+                "anchor": match.get("anchor", ""),
+                "target_url": match.get("url_to", ""),
+                "is_nofollow": not match.get("is_follow", True),
+                "first_seen": match.get("first_seen", ""),
+            }
+        return {"found": False}
+
+    async def get_domain_rank(self, domain: str) -> float:
+        """
+        Get domain rank (authority metric, 0-100).
+
+        Replaces: Ahrefs get_domain_rating()
+        """
+        summary = await self.get_backlink_summary(target=domain)
+        tasks = summary.get("tasks", [])
+        if tasks and tasks[0].get("result"):
+            result = tasks[0]["result"][0]
+            return result.get("domain_rank", 0)
+        return 0.0
+
+    # ========== On-Page API ==========
+
+    async def create_onpage_task(
+        self,
+        target: str,
+        max_crawl_pages: int = 100,
+        load_resources: bool = True,
+        enable_javascript: bool = True,
+    ) -> dict:
+        """Create an on-page audit task."""
+        await self.rate_limiter.acquire(self.PROVIDER)
+        post_data = [{
+            "target": target,
+            "max_crawl_pages": max_crawl_pages,
+            "load_resources": load_resources,
+            "enable_javascript": enable_javascript,
+        }]
+        resp = await self.client.request(
+            "POST", "/v3/on_page/task_post",
+            headers=self._default_headers,
+            json=post_data,
+        )
+        return resp.json()
+
+    async def get_onpage_summary(self, task_id: str) -> dict:
+        """Get on-page audit summary."""
         await self.rate_limiter.acquire(self.PROVIDER)
         resp = await self.client.request(
-            "GET", "/site-explorer/best-by-links",
-            headers=self._headers(),
-            params={"target": target, "mode": mode, "limit": limit},
+            "GET", f"/v3/on_page/summary/{task_id}",
+            headers=self._default_headers,
         )
         return resp.json()
 
@@ -3109,9 +3358,9 @@ class AhrefsClient:
 
 ---
 
-## 13. PageSpeed Insights API
+## 12. PageSpeed Insights API
 
-### 13.1 Auth Method & Setup
+### 12.1 Auth Method & Setup
 
 **API Key (Query Parameter) or Unauthenticated**
 
@@ -3122,7 +3371,7 @@ class AhrefsClient:
 | **Base URL** | `https://www.googleapis.com/pagespeedonline/v5` |
 | **Free tier** | Works without API key but with lower quotas |
 
-### 13.2 Endpoints Used
+### 12.2 Endpoints Used
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
@@ -3130,7 +3379,7 @@ class AhrefsClient:
 | `GET /runPagespeed?url={url}&category=performance` | GET | Performance only |
 | `GET /runPagespeed?url={url}&strategy=mobile` | GET | Mobile analysis |
 
-### 13.3 Data Schema
+### 12.3 Data Schema
 
 ```python
 @dataclass
@@ -3158,7 +3407,7 @@ class PageSpeedResult:
     loading_experience: dict # Real-user CrUX data if available
 ```
 
-### 13.4 Rate Limits
+### 12.4 Rate Limits
 
 | Limit | Value |
 |-------|-------|
@@ -3166,7 +3415,7 @@ class PageSpeedResult:
 | **With API key** | 25,000 queries/day (default quota) |
 | **Concurrent** | Not strictly limited; batches recommended |
 
-### 13.5 Python Implementation
+### 12.5 Python Implementation
 
 ```python
 """
@@ -3305,9 +3554,9 @@ class PageSpeedInsightsClient:
 
 ---
 
-## 14. CMS Integrations
+## 13. CMS Integrations
 
-### 14.1 WordPress REST API
+### 13.1 WordPress REST API
 
 #### Auth: Application Passwords
 
@@ -3569,7 +3818,7 @@ class WordPressClient:
         await self.client.close()
 ```
 
-### 14.2 Webflow CMS API
+### 13.2 Webflow CMS API
 
 ```python
 """
@@ -3693,7 +3942,7 @@ class WebflowClient:
         await self.client.close()
 ```
 
-### 14.3 Shopify Admin API
+### 13.3 Shopify Admin API
 
 ```python
 """
@@ -3859,7 +4108,7 @@ class ShopifyClient:
         await self.client.close()
 ```
 
-### 14.4 Generic REST API Connector
+### 13.4 Generic REST API Connector
 
 ```python
 """
@@ -3953,9 +4202,9 @@ class GenericCMSClient:
 
 ---
 
-## 15. Notification Integrations
+## 14. Notification Integrations
 
-### 15.1 Slack API
+### 14.1 Slack API
 
 ```python
 """
@@ -4109,7 +4358,7 @@ class SlackClient:
             await self.client.close()
 ```
 
-### 15.2 Discord API
+### 14.2 Discord API
 
 ```python
 """
@@ -4189,7 +4438,7 @@ class DiscordClient:
         return await self.send(content="", embeds=[embed])
 ```
 
-### 15.3 Email (SMTP)
+### 14.3 Email (SMTP)
 
 ```python
 """
@@ -4294,7 +4543,7 @@ class EmailNotificationClient:
         return await self.send(to=to, subject=subject, body_html=html)
 ```
 
-### 15.4 Telegram Bot API
+### 14.4 Telegram Bot API
 
 ```python
 """
@@ -4427,16 +4676,15 @@ class TelegramBotClient:
 | 6 | Gmail API | OAuth 2.0 | 5/sec, 2K/day | — | Outreach execution |
 | 7 | Exa AI | Bearer Token | 5/sec | 1h | Semantic search & extraction |
 | 8 | Tavily | API Key | 5/sec | 1h | AI-optimized research |
-| 9 | SerpAPI | API Key | 10/min | 2h | Multi-engine SERP data |
-| 10 | Ahrefs API | Bearer Token | 10/sec | 12h | Backlinks & keywords |
-| 11 | PageSpeed Insights | API Key | 25/100s | 6h | Core Web Vitals |
-| 12 | WordPress | App Password | 30/min | — | Content publishing |
-| 13 | Webflow | Bearer Token | 60/min | — | Content publishing |
-| 14 | Shopify | Access Token | 2/sec | — | Product/SEO management |
-| 15 | Slack | Webhook/Bot | 1/sec | — | Notifications |
-| 16 | Discord | Webhook | 5/sec | — | Notifications |
-| 17 | Email | SMTP/TLS | Per SMTP | — | Report delivery |
-| 18 | Telegram | Bot Token | 30/sec | — | Notifications |
+| 9 | DataForSEO | Basic Auth | 2000/min | 2h | SERP, keywords, backlinks, on-page, content NLP |
+| 10 | PageSpeed Insights | API Key | 25/100s | 6h | Core Web Vitals |
+| 11 | WordPress | App Password | 30/min | — | Content publishing |
+| 12 | Webflow | Bearer Token | 60/min | — | Content publishing |
+| 13 | Shopify | Access Token | 2/sec | — | Product/SEO management |
+| 14 | Slack | Webhook/Bot | 1/sec | — | Notifications |
+| 15 | Discord | Webhook | 5/sec | — | Notifications |
+| 16 | Email | SMTP/TLS | Per SMTP | — | Report delivery |
+| 17 | Telegram | Bot Token | 30/sec | — | Notifications |
 
 ---
 
@@ -4484,11 +4732,9 @@ EXA_API_KEY=...
 # Tavily
 TAVILY_API_KEY=...
 
-# SerpAPI
-SERPAPI_API_KEY=...
-
-# Ahrefs
-AHREFS_API_KEY=...
+# DataForSEO (replaces SerpAPI + Ahrefs)
+DATAFORSEO_LOGIN=...
+DATAFORSEO_PASSWORD=...
 
 # PageSpeed Insights
 PAGESPEED_API_KEY=...

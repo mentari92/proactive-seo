@@ -34,7 +34,7 @@
 │                              CLIENTS & CONSUMERS                                     │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌───────────────────────┐ │
 │  │ Browser  │  │ Mobile   │  │ API      │  │ Webhooks │  │ Third-Party Integrations│ │
-│  │ (SPA)    │  │ Apps     │  │ Clients  │  │ Inbound  │  │ (GSC, GA4, Ahrefs)   │ │
+│  │ (SPA)    │  │ Apps     │  │ Clients  │  │ Inbound  │  │(GSC, GA4, DataForSEO)│ │
 │  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘  └──────┬────────────────┘ │
 └───────┼──────────────┼──────────────┼──────────────┼───────────────┼─────────────────┘
         │              │              │              │               │
@@ -464,7 +464,7 @@ Capabilities:
 Integrations:
   Google Search Console API → daily data sync
   Google Analytics 4 API → daily data sync
-  Ahrefs API → backlink data
+  DataForSEO Backlinks API → backlink data
   SEMrush API → competitor data (optional)
   Moz API → domain authority (optional)
   Custom: webhook ingestion for any data source
@@ -560,7 +560,7 @@ Port: 8012
 Instances: 3 (API), 3 workers
 
 Capabilities:
-  - Backlink profile analysis (via Ahrefs/Moz API integration)
+  - Backlink profile analysis (via DataForSEO Backlinks API)
   - New & lost backlink monitoring
   - Toxic link detection & disavow file generation
   - Link building opportunity identification

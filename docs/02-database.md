@@ -60,7 +60,7 @@ CREATE TYPE seo.campaign_status AS ENUM ('draft', 'active', 'paused', 'completed
 CREATE TYPE seo.contact_status AS ENUM ('identified', 'contacted', 'responded', 'accepted', 'declined', 'bounced');
 CREATE TYPE seo.message_status AS ENUM ('queued', 'sent', 'delivered', 'opened', 'clicked', 'bounced', 'replied');
 CREATE TYPE seo.haro_status AS ENUM ('new', 'matched', 'drafted', 'submitted', 'accepted', 'declined', 'expired');
-CREATE TYPE seo.oauth_provider AS ENUM ('google', 'google_search_console', 'google_analytics', 'bing', 'bing_webmaster', 'ahrefs', 'semrush', 'moz', 'screaming_frog', 'wordpress', 'shopify');
+CREATE TYPE seo.oauth_provider AS ENUM ('google', 'google_search_console', 'google_analytics', 'bing', 'bing_webmaster', 'dataforseo', 'semrush', 'moz', 'screaming_frog', 'wordpress', 'shopify');
 CREATE TYPE seo.anomaly_type AS ENUM ('traffic_drop', 'traffic_spike', 'ranking_drop', 'ranking_gain', 'crawl_error_spike', 'backlink_loss', 'index_coverage_drop', 'core_web_vitals_degradation', 'custom');
 CREATE TYPE seo.report_format AS ENUM ('pdf', 'html', 'csv', 'json', 'xlsx');
 CREATE TYPE seo.event_severity AS ENUM ('debug', 'info', 'warning', 'error', 'critical');

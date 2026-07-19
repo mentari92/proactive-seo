@@ -42,7 +42,7 @@ Proactive SEO Blueprint is an AI-powered SEO automation platform that handles 87
 |---|---|
 | **87% Automation** | 8 specialized AI agents handle keyword research, content optimization, technical audits, link building outreach, rank tracking, competitor analysis, schema markup, and reporting — end-to-end |
 | **Proactive Mode** | Runs 24/7 in the background. Detects and fixes issues before they impact rankings. Finds and acts on opportunities before competitors do. |
-| **Single Platform** | Replaces the Ahrefs + SurferSEO + Jasper + Screaming Frog tool stack with one integrated system. |
+| **Single Platform** | Replaces the DataForSEO + SurferSEO + Jasper + Screaming Frog tool stack with one integrated system. |
 | **Action-Oriented** | Unlike traditional tools that generate reports for humans to act on, agents execute changes directly (content updates, meta tag fixes, redirect rules, outreach emails). |
 | **Cost Efficiency** | Reduces per-client SEO cost by 60-70% for agencies; eliminates the need for a full-time SEO specialist for SaaS companies. |
 
@@ -65,7 +65,7 @@ SaaS subscription with tiered pricing based on project count, content volume, an
 SEO is critical for sustainable growth, but it's broken:
 
 - **Time-intensive:** A typical SEO workflow requires 20-40 hours/week per site — keyword research, content optimization, technical audits, link building, reporting
-- **Tool fragmentation:** Teams use 5-8 separate tools (Ahrefs, SEMrush, SurferSEO, Screaming Frog, Jasper, Google Search Console, Ahrefs Webmaster Tools) with no unified workflow
+- **Tool fragmentation:** Teams use 5-8 separate tools (DataForSEO, SEMrush, SurferSEO, Screaming Frog, Jasper, Google Search Console) with no unified workflow
 - **Reactive, not proactive:** Most tools show you what's wrong after rankings drop. By the time you diagnose and fix, you've lost weeks of traffic
 - **Expensive at scale:** An agency managing 30 clients needs 5-8 SEO specialists plus $2,000+/month in tool subscriptions
 - **Knowledge bottleneck:** SEO expertise is concentrated in a few people; when they leave, institutional knowledge disappears
@@ -105,7 +105,7 @@ Proactive SEO Blueprint is a platform where 8 specialized AI agents autonomously
 
 ### Competitive Analysis
 
-| Capability | Proactive SEO Blueprint | Ahrefs | SEMrush | SurferSEO |
+| Capability | Proactive SEO Blueprint | DataForSEO | SEMrush | SurferSEO |
 |---|---|---|---|---|
 | **Price (Pro tier)** | $99/mo | $199/mo | $129/mo | $89/mo |
 | **Automation Level** | 87% autonomous | Manual tool | Manual tool | Semi-automated |
@@ -206,7 +206,7 @@ Proactive SEO Blueprint is a platform where 8 specialized AI agents autonomously
 
 | # | Feature | Priority | Automation | Dependencies | Phase |
 |---|---|---|---|---|---|
-| F-19 | Backlink Profile Analysis | P0 | Full | Ahrefs/Moz API | 1 |
+| F-19 | Backlink Profile Analysis | P0 | Full | DataForSEO Backlinks API | 1 |
 | F-20 | Link Opportunity Discovery | P1 | Full | F-19, Competitor Analysis | 2 |
 | F-21 | Outreach Email Drafting | P1 | Semi | F-20, Email Integration | 2 |
 | F-22 | Outreach Tracking & Follow-ups | P1 | Semi | F-21 | 2 |
@@ -324,7 +324,7 @@ Proactive SEO Blueprint is a platform where 8 specialized AI agents autonomously
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                     EXTERNAL INTEGRATIONS                               │
 │                                                                         │
-│  Google APIs │ DataForSEO │ Ahrefs │ OpenAI │ WordPress │ Shopify    │
+│  Google APIs │ DataForSEO │ OpenAI │ WordPress │ Shopify          │
 │  Webflow │ SendGrid │ Stripe │ Slack │ PagerDuty                        │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
@@ -433,7 +433,7 @@ User Creates Project
 
 > **Detailed spec:** [`06-integrations.md`](./06-integrations.md)
 
-### All 13 Integrations
+### All 12 Integrations
 
 | # | Integration | Type | Auth | Purpose | Phase |
 |---|---|---|---|---|---|
@@ -445,11 +445,10 @@ User Creates Project
 | 6 | **PageSpeed Insights** | API | API Key | Core Web Vitals, performance metrics | 1 |
 | 7 | **SendGrid** | API | API Key | Transactional email, report delivery, outreach emails | 1 |
 | 8 | **Stripe** | API | API Key | Billing, subscriptions, usage metering | 1 |
-| 9 | **Ahrefs** | API | API Key | Backlink data (optional enrichment) | 2 |
-| 10 | **Shopify** | REST/GraphQL | OAuth 2.0 | Product SEO, content publishing | 2 |
-| 11 | **Webflow** | API | OAuth 2.0 | CMS publishing, meta tag management | 2 |
-| 12 | **Slack** | Webhook/Bot | OAuth 2.0 | Notifications, alerts, report delivery | 2 |
-| 13 | **PagerDuty** | API | API Key | Critical alert escalation | 2 |
+| 9 | **Shopify** | REST/GraphQL | OAuth 2.0 | Product SEO, content publishing | 2 |
+| 10 | **Webflow** | API | OAuth 2.0 | CMS publishing, meta tag management | 2 |
+| 11 | **Slack** | Webhook/Bot | OAuth 2.0 | Notifications, alerts, report delivery | 2 |
+| 12 | **PagerDuty** | API | API Key | Critical alert escalation | 2 |
 
 ### Data Flow
 
@@ -906,7 +905,7 @@ GitHub Actions
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
 | **LLM API costs spiral** | High | High | Cache common outputs; use smaller models for classification; negotiate volume discounts; monitor cost per feature |
-| **SERP data API rate limits** | Medium | High | Multi-provider strategy (DataForSEO + SerpApi + direct scraping fallback); intelligent caching; batch requests |
+| **SERP data API rate limits** | Medium | High | DataForSEO with intelligent caching; batch requests; direct scraping fallback for rate limit resilience |
 | **Agent execution reliability** | Medium | High | Idempotent task design; dead-letter queues; circuit breakers; comprehensive retry logic |
 | **Crawling infrastructure at scale** | Medium | Medium | Distributed crawling with Playwright; respect robots.txt; proxy rotation; incremental crawls |
 | **Database performance degradation** | Medium | High | ClickHouse for time-series; read replicas for PostgreSQL; query optimization; connection pooling |
@@ -916,7 +915,7 @@ GitHub Actions
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
 | **Google algorithm changes** | High | Medium | Focus on fundamentals (content quality, technical health); diversify traffic sources; rapid adaptation via agent reconfiguration |
-| **Ahrefs/SEMrush add AI features** | High | High | Differentiate on automation depth (execution, not just recommendations); faster iteration; lower price point |
+| **DataForSEO/SEMrush add AI features** | High | High | Differentiate on automation depth (execution, not just recommendations); faster iteration; lower price point |
 | **AI content detection penalties** | Medium | Medium | Human-in-the-loop review; focus on value-add (research, optimization) not just generation; quality scoring |
 | **Enterprise sales cycle too long** | Medium | Medium | Product-led growth focus; self-serve first; enterprise as expansion revenue |
 

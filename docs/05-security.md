@@ -2134,7 +2134,7 @@ class CredentialVault:
     async def store_credentials(
         self,
         org_id: str,
-        service: str,       # "google_search_console", "ahrefs", "semrush"
+        service: str,       # "google_search_console", "dataforseo", "semrush"
         credentials: dict,
         user_id: str,
     ) -> str:
