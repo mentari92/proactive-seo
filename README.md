@@ -68,7 +68,7 @@ proactive-seo/
 | Backend | FastAPI (Python 3.12) |
 | Database | PostgreSQL 16 + Redis |
 | Queue | Celery + Redis |
-| LLM | OpenAI Responses API with GPT-5.6 role routing + GPT-5.3-Codex |
+| LLM | Codex |
 | Infra | Docker Compose + AWS EKS/RDS/ElastiCache/S3 + Cloudflare |
 | Monitoring | Prometheus + Grafana + Loki + Tempo/OpenTelemetry |
 

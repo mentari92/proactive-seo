@@ -18,5 +18,5 @@ provider documentation, and finally draft code examples.
 | Campaign state | Campaigns use draft/active/paused/completed/archived. Contacts use draft/sent/replied/negotiating/live/rejected. |
 | Database | The logical model is exactly 37 application tables. Initial high-volume tables are not partitioned so UUID PK/FK contracts remain valid. |
 | RLS | Tenant policies quote schema/table identifiers separately; permissions isolate through their role's organization. |
-| OpenAI | Responses API plus strict structured outputs. Codex is role-routed for content generation. |
+| Responses API with strict structured outputs. Codex is role-routed for content generation. |
 | Observability | Prometheus, Grafana, Loki, Tempo, OpenTelemetry, and Alertmanager are canonical. |

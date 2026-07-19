@@ -46,7 +46,7 @@ versioned event envelopes. Agent code is deterministic before an LLM is introduc
 technical rules, dual content scoring, SERP normalization, outreach sequencing, competitor
 comparison, decision scoring, and execution gates can all be tested without a provider.
 
-OpenAI calls use the Responses API with Pydantic parsing. The role router preserves cost and latency:
+Codex calls use the Responses API with Pydantic parsing. The role router preserves cost and latency:
 Luna handles extraction, Terra routine generation, Sol high-impact reasoning, and GPT-5.3-Codex code
 repair.
 

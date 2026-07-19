@@ -14,7 +14,7 @@ daemon, paid provider credentials, cloud authority, or permission to affect exte
 | 3 — Content & Rank | 13–16 | Forge Google/AI dual scoring, Scout rank and feature normalization, DataForSEO SERP/keyword/backlink methods, GSC analytics, historical database entities, anomaly records, budgets, and agent alerts. |
 | 4 — Outreach | 17–22 | Four campaign types, six prospect states, HARO/broken-link/guest-post/unlinked-mention inputs, approval-gated Gmail drafts/sends, reply stop behavior, 3/5/7-day follow-ups, campaign persistence, and link-verification signals. |
 | 5 — Frontend | 23–31 | Next.js App Router application with 56 route definitions, semantic Tailwind tokens, auth, dashboard, command center, agent views, campaign table/Kanban, content editor, settings, React Query, Zustand, reconnecting SSE, Recharts, responsive navigation, dark mode, and accessible controls. |
-| 6 — Integrations | 32–36 | Shared resilient async provider layer and adapters/definitions for GSC, GA4, Bing, Yandex, Naver, Gmail, Exa, Tavily, DataForSEO, PageSpeed, WordPress, Webflow, and Shopify. OpenAI, Stripe, Slack, SMTP, and PagerDuty remain platform adapters. |
+| 6 — Integrations | 32–36 | Shared resilient async provider layer and adapters/definitions for GSC, GA4, Bing, Yandex, Naver, Gmail, Exa, Tavily, DataForSEO, PageSpeed, WordPress, Webflow, and Shopify. Stripe, Slack, SMTP, and PagerDuty remain platform adapters. |
 | 7 — Production polish | 37–42 | Prometheus/Grafana/Loki/Tempo/OpenTelemetry/Alertmanager, structured redacted logging, Cloudflare WAF rules, AWS Terraform, hardened Helm workloads, ArgoCD, GitHub Actions, dependency and container scanning, security policy, implementation guide, and operations runbook. |
 
 ## Deterministic acceptance results

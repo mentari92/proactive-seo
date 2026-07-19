@@ -51,7 +51,7 @@ agents:
   - {key: executor, role: action_executor, queue: agent.executor}
 providers:
   execution: [gsc, ga4, bing, yandex, naver, gmail, exa, tavily, dataforseo, pagespeed, wordpress, webflow, shopify]
-  platform: [openai, stripe, slack, smtp, pagerduty]
+  platform: [stripe, slack, smtp, pagerduty]
 enums:
   campaign_status: [draft, active, paused, completed, archived]
   prospect_status: [draft, sent, replied, negotiating, live, rejected]

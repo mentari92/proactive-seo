@@ -167,7 +167,7 @@ Start building. Read the docs first, then begin with Phase 1.
 
 ## Cara Pakai
 
-1. Buka Codex (OpenAI)
+1. Buka Codex
 2. Paste prompt di atas
 3. Codex akan baca semua 9 document di `docs/`
 4. Codex akan mulai build dari Phase 1

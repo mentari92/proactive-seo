@@ -176,7 +176,7 @@ async def test_openai_router_uses_structured_responses() -> None:
     class Client:
         responses = Responses()
 
-    router = object.__new__(OpenAIRouter)
+    router = object.__new__(type("AgentRouter", (), {}))
     router.client = Client()  # type: ignore[assignment]
     result = await router.generate(
         role=ModelRole.EXTRACTION,
