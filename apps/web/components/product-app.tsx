@@ -378,9 +378,9 @@ function ReportsPage() {
   return (
     <section className="stats-grid">
       <StatCard label="Scheduled reports" value="6" delta="2" />
-      <StatCard label="Last generated" value="2h ago" />
-      <StatCard label="Export formats" value="PDF, CSV" />
-      <StatCard label="Automated" value="Weekly" />
+      <StatCard label="Last generated" value="2h ago" delta="-" />
+      <StatCard label="Export formats" value="PDF, CSV" delta="-" />
+      <StatCard label="Automated" value="Weekly" delta="-" />
     </section>
   );
 }
