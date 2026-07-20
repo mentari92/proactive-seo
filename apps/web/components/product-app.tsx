@@ -241,7 +241,7 @@ function Overview() {
     <>
       <section className="stats-grid">
         <StatCard label="SEO health" value="87 / 100" delta="4.2%" />
-        <StatCard label="Search visibility" value="74.3%" delta="6.8%" />
+        <StatCard label="AI Search visibility" value="74.3%" delta="6.8%" />
         <StatCard label="Keywords in top 10" value="286" delta="23" />
         <StatCard label="Open critical issues" value="7" delta="2" positive={false} />
       </section>
@@ -330,6 +330,61 @@ function SettingsPage() {
   return <div className="settings-grid"><Card className="settings-nav">{["Profile", "Organization", "Team", "Billing", "API keys", "Notifications", "Security", "Integrations"].map((item) => <button key={item}>{item}</button>)}</Card><Card className="settings-form"><div><h3>Organization profile</h3><p>Manage the workspace identity used in reports and outreach.</p></div><label>Organization name<input defaultValue="Acme Inc." /></label><label>Primary domain<input defaultValue="https://acme.com" /></label><label>Default timezone<select defaultValue="UTC"><option>UTC</option><option>Asia/Makassar</option></select></label><div className="form-actions"><Button variant="secondary">Cancel</Button><Button>Save changes</Button></div></Card></div>;
 }
 
+function SEOCommandCenter() {
+  return (
+    <section className="stats-grid">
+      <StatCard label="Keywords tracked" value="1,204" delta="5.2%" />
+      <StatCard label="Avg. position" value="4.8" delta="0.3" />
+      <StatCard label="SERP features" value="38" delta="7" />
+      <StatCard label="Competitors" value="6" delta="1" positive={false} />
+    </section>
+  );
+}
+
+function ContentHub() {
+  return (
+    <section className="stats-grid">
+      <StatCard label="Content briefs" value="12" delta="3" />
+      <StatCard label="AI Readiness" value="79 / 100" delta="5.1%" />
+      <StatCard label="Google score" value="86 / 100" delta="2.3%" />
+      <StatCard label="Decaying articles" value="4" delta="2" positive={false} />
+    </section>
+  );
+}
+
+function TechnicalAudit() {
+  return (
+    <section className="stats-grid">
+      <StatCard label="Crawl errors" value="3" delta="1" positive={false} />
+      <StatCard label="Core Web Vitals" value="Pass" delta="2 sites" />
+      <StatCard label="Schema coverage" value="68%" delta="12%" />
+      <StatCard label="Broken links" value="7" delta="3" positive={false} />
+    </section>
+  );
+}
+
+function AnalyticsPage() {
+  return (
+    <section className="stats-grid">
+      <StatCard label="Organic traffic" value="24.8K" delta="8.3%" />
+      <StatCard label="AI Search visibility" value="74.3%" delta="6.8%" />
+      <StatCard label="Click-through rate" value="4.2%" delta="0.3%" />
+      <StatCard label="Bounce rate" value="38%" delta="2%" positive={false} />
+    </section>
+  );
+}
+
+function ReportsPage() {
+  return (
+    <section className="stats-grid">
+      <StatCard label="Scheduled reports" value="6" delta="2" />
+      <StatCard label="Last generated" value="2h ago" />
+      <StatCard label="Export formats" value="PDF, CSV" />
+      <StatCard label="Automated" value="Weekly" />
+    </section>
+  );
+}
+
 function RouteContent({ route }: { route: string }) {
   if (route === "/overview" || route === "/") return <Overview />;
   if (route === "/agents" || /^\/agents\/[^/]+$/.test(route)) return <AgentCenter />;
@@ -337,6 +392,11 @@ function RouteContent({ route }: { route: string }) {
   if (route.startsWith("/settings/integrations")) return <Integrations />;
   if (route.startsWith("/settings")) return <SettingsPage />;
   if (route.startsWith("/content/editor")) return <ContentEditor />;
+  if (route.startsWith("/seo/overview") || route.startsWith("/seo")) return <SEOCommandCenter />;
+  if (route.startsWith("/content/briefs") || route.startsWith("/content")) return <ContentHub />;
+  if (route.startsWith("/technical/audit") || route.startsWith("/technical")) return <TechnicalAudit />;
+  if (route.startsWith("/analytics")) return <AnalyticsPage />;
+  if (route === "/reports") return <ReportsPage />;
   if (route.includes("keywords") || route.includes("pages") || route.includes("issues") || route.startsWith("/reports")) return <DataTable route={route} />;
   return <><Overview /><div className="section-spacer" /><DataTable route={route} /></>;
 }
