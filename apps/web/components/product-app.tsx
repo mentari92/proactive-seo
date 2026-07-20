@@ -141,7 +141,7 @@ function AuthPage({ route }: { route: string }) {
           }}
         >
           <div>
-            <p className="overline">Welcome to ProActive</p>
+            <p className="overline">Welcome to ProActive SEO</p>
             <h2>{verified ? "Email verified" : forgot ? "Reset your password" : isRegister ? "Create your workspace" : "Sign in to your account"}</h2>
             <p className="muted">{verified ? "Your identity is confirmed. Sign in to continue." : forgot ? "We’ll send a secure reset link if the account exists." : "Use your organization credentials to continue."}</p>
           </div>
@@ -153,7 +153,7 @@ function AuthPage({ route }: { route: string }) {
           {mutation.isSuccess && forgot && <p role="status" className="muted">If the account exists, a secure link is on its way.</p>}
           <Button type="submit" disabled={mutation.isPending} aria-busy={mutation.isPending}>{mutation.isPending ? "Working…" : forgot ? "Send reset link" : isRegister ? "Create workspace" : "Sign in"}</Button>
           <p className="form-switch">
-            {isRegister ? "Already have an account?" : "New to ProActive?"}{" "}
+            {isRegister ? "Already have an account?" : "New to ProActive SEO?"}{" "}
             <Link href={isRegister ? "/login" : "/register"}>{isRegister ? "Sign in" : "Create an account"}</Link>
           </p>
           {!isRegister && !forgot && <Link className="forgot-link" href="/forgot-password">Forgot password?</Link>}
@@ -170,7 +170,7 @@ function Sidebar({ route }: { route: string }) {
     <>
       {sidebarOpen && <button className="scrim" aria-label="Close navigation" onClick={toggleSidebar} />}
       <aside className={cn("sidebar", sidebarOpen && "sidebar-open")}>
-        <div className="sidebar-brand"><span className="brand-mark">P</span><span>ProActive</span><button className="mobile-close" onClick={toggleSidebar} aria-label="Close navigation"><X size={18} /></button></div>
+        <div className="sidebar-brand"><span className="brand-mark">P</span><span>ProActive SEO</span><button className="mobile-close" onClick={toggleSidebar} aria-label="Close navigation"><X size={18} /></button></div>
         <div className="project-switcher"><span className="project-avatar">A</span><span><b>Acme.com</b><small>Professional</small></span><ChevronDown size={15} /></div>
         <nav aria-label="Primary navigation">
           {NAVIGATION.map((item) => {
