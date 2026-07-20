@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v4
         with: {terraform_version: "1.15.5"}
       - uses: azure/setup-helm@v4
       - run: docker compose --profile full config --quiet
