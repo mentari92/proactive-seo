@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  labels: {app.kubernetes.io/name: api-gateway, app.kubernetes.io/part-of: proactive-seo}
+spec:
+  replicas: 3
+  strategy: {type: RollingUpdate, rollingUpdate: {maxUnavailable: 0, maxSurge: 1}}
+  selector: {matchLabels: {app.kubernetes.io/name: api-gateway}}
+  template:
+    metadata:
+      labels: {app.kubernetes.io/name: api-gateway, app.kubernetes.io/part-of: proactive-seo}
+      annotations: {prometheus.io/scrape: "true", prometheus.io/port: "8000", prometheus.io/path: /metrics}
+    spec:
+      serviceAccountName: proactive-seo
+      automountServiceAccountToken: false
+      securityContext: {runAsNonRoot: true, seccompProfile: {type: RuntimeDefault}}
+      containers:
+        - name: gateway
+          image: "{{ .Values.image.backend }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports: [{name: http, containerPort: 8000}]
+          env: [{name: APP_SERVICE_NAME, value: all}, {name: APP_ENV, value: {{ .Values.global.environment | quote }}}]
+          envFrom:
+            - {configMapRef: {name: {{ .Values.global.configMapName }}}}
+            - {secretRef: {name: {{ .Values.global.secretName }}}}
+          resources:
+            requests: {cpu: 500m, memory: 512Mi}
+            limits: {cpu: 1, memory: 1Gi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          volumeMounts: [{name: tmp, mountPath: /tmp}]
+          livenessProbe: {httpGet: {path: /health, port: http}, periodSeconds: 15}
+          readinessProbe: {httpGet: {path: /health/ready, port: http}, periodSeconds: 10}
+      volumes: [{name: tmp, emptyDir: {sizeLimit: 128Mi}}]
+---
+apiVersion: v1
+kind: Service
+metadata: {name: api-gateway}
+spec:
+  selector: {app.kubernetes.io/name: api-gateway}
+  ports: [{name: http, port: 8000, targetPort: http}]
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: {name: api-gateway}
+spec:
+  minAvailable: 2
+  selector: {matchLabels: {app.kubernetes.io/name: api-gateway}}

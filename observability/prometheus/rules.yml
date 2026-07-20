@@ -1,0 +1,40 @@
+groups:
+  - name: proactive-critical
+    rules:
+      - alert: APIUnavailable
+        expr: up{job="proactive-services"} == 0
+        for: 2m
+        labels: {severity: critical}
+        annotations:
+          summary: "{{ $labels.instance }} is unavailable"
+          runbook: "https://docs.proactive-seo.local/runbooks/service-unavailable"
+      - alert: HighErrorRate
+        expr: sum(rate(proactive_http_requests_total{status=~"5.."}[5m])) / clamp_min(sum(rate(proactive_http_requests_total[5m])), 1) > 0.05
+        for: 10m
+        labels: {severity: critical}
+        annotations: {summary: "API 5xx rate exceeds 5%"}
+  - name: proactive-warning
+    rules:
+      - alert: HighP95Latency
+        expr: histogram_quantile(0.95, sum by (le, service) (rate(proactive_http_request_duration_seconds_bucket[10m]))) > 0.5
+        for: 15m
+        labels: {severity: warning}
+        annotations: {summary: "{{ $labels.service }} p95 latency exceeds 500ms"}
+      - alert: ProviderBudgetNearlyExhausted
+        expr: proactive_provider_budget_utilization_percent > 95
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: "{{ $labels.provider }} daily budget exceeds 95%"}
+      - alert: AgentDLQBacklog
+        expr: proactive_agent_dlq_depth > 0
+        for: 10m
+        labels: {severity: warning}
+        annotations: {summary: "Agent dead-letter queue requires review"}
+  - name: proactive-info
+    rules:
+      - alert: AgentQueueGrowing
+        expr: proactive_agent_queue_depth > 100
+        for: 20m
+        labels: {severity: info}
+        annotations: {summary: "{{ $labels.agent }} queue is growing"}
+

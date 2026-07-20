@@ -1,0 +1,110 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: proactive-seo-migrate-{{ .Release.Revision }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-5"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels: {app.kubernetes.io/name: database-migration, app.kubernetes.io/part-of: proactive-seo}
+    spec:
+      restartPolicy: Never
+      serviceAccountName: proactive-seo
+      automountServiceAccountToken: false
+      securityContext: {runAsNonRoot: true, seccompProfile: {type: RuntimeDefault}}
+      containers:
+        - name: migrate
+          image: "{{ .Values.image.backend }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          command: [alembic, upgrade, head]
+          envFrom:
+            - {configMapRef: {name: {{ .Values.global.configMapName }}}}
+            - {secretRef: {name: {{ .Values.global.secretName }}}}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: 500m, memory: 512Mi}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-beat
+  labels: {app.kubernetes.io/name: celery-beat, app.kubernetes.io/part-of: proactive-seo}
+spec:
+  replicas: 1
+  strategy: {type: Recreate}
+  selector: {matchLabels: {app.kubernetes.io/name: celery-beat}}
+  template:
+    metadata: {labels: {app.kubernetes.io/name: celery-beat, app.kubernetes.io/part-of: proactive-seo}}
+    spec:
+      serviceAccountName: proactive-seo
+      automountServiceAccountToken: false
+      securityContext: {runAsNonRoot: true, seccompProfile: {type: RuntimeDefault}}
+      containers:
+        - name: beat
+          image: "{{ .Values.image.backend }}:{{ .Values.image.tag }}"
+          command: [celery, -A, proactive_core.celery_app:celery_app, beat, --loglevel=INFO, --schedule=/tmp/celerybeat-schedule]
+          envFrom:
+            - {configMapRef: {name: {{ .Values.global.configMapName }}}}
+            - {secretRef: {name: {{ .Values.global.secretName }}}}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: 500m, memory: 512Mi}
+          volumeMounts: [{name: tmp, mountPath: /tmp}]
+      volumes: [{name: tmp, emptyDir: {sizeLimit: 128Mi}}]
+{{- range .Values.workers }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-{{ .name }}
+  labels: {app.kubernetes.io/name: worker-{{ .name }}, app.kubernetes.io/part-of: proactive-seo}
+spec:
+  replicas: {{ .replicas }}
+  strategy: {type: RollingUpdate, rollingUpdate: {maxUnavailable: 1, maxSurge: 1}}
+  selector: {matchLabels: {app.kubernetes.io/name: worker-{{ .name }}}}
+  template:
+    metadata:
+      labels: {app.kubernetes.io/name: worker-{{ .name }}, app.kubernetes.io/part-of: proactive-seo}
+      annotations: {prometheus.io/scrape: "true", prometheus.io/port: "9808"}
+    spec:
+      serviceAccountName: proactive-seo
+      automountServiceAccountToken: false
+      securityContext: {runAsNonRoot: true, seccompProfile: {type: RuntimeDefault}}
+      containers:
+        - name: worker
+          image: "{{ $.Values.image.backend }}:{{ $.Values.image.tag }}"
+          imagePullPolicy: {{ $.Values.global.imagePullPolicy }}
+          command: [celery, -A, proactive_core.celery_app:celery_app, worker, --loglevel=INFO, --queue={{ .queue }}, --hostname={{ .name }}@%h]
+          envFrom:
+            - {configMapRef: {name: {{ $.Values.global.configMapName }}}}
+            - {secretRef: {name: {{ $.Values.global.secretName }}}}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          resources:
+            requests: {cpu: {{ .cpu | quote }}, memory: {{ .memory | quote }}}
+            limits: {cpu: {{ .cpu | quote }}, memory: {{ .memory | quote }}}
+          volumeMounts: [{name: tmp, mountPath: /tmp}]
+      volumes: [{name: tmp, emptyDir: {sizeLimit: 256Mi}}]
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: {name: worker-{{ .name }}}
+spec:
+  minAvailable: 1
+  selector: {matchLabels: {app.kubernetes.io/name: worker-{{ .name }}}}
+{{- end }}

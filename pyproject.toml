@@ -1,0 +1,76 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "proactive-seo"
+version = "0.1.0"
+description = "Enterprise agentic SEO automation platform"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "alembic>=1.14,<2",
+  "argon2-cffi>=23.1,<26",
+  "asyncpg>=0.30,<1",
+  "celery[redis]>=5.4,<6",
+  "cryptography>=44,<47",
+  "email-validator>=2.2,<3",
+  "fastapi>=0.115,<1",
+  "httpx>=0.28,<1",
+  "openai>=1.68,<3",
+  "prometheus-client>=0.21,<1",
+  "pydantic-settings>=2.7,<3",
+  "pyjwt[crypto]>=2.10,<3",
+  "pyotp>=2.9,<3",
+  "python-json-logger>=3.2,<5",
+  "python-multipart>=0.0.20,<1",
+  "pyyaml>=6.0,<7",
+  "redis>=5.2,<7",
+  "sqlalchemy[asyncio]>=2.0.36,<3",
+  "structlog>=25.1,<26",
+  "uvicorn[standard]>=0.34,<1",
+  "uuid6>=2024.7.10",
+]
+
+[project.optional-dependencies]
+dev = [
+  "aiosqlite>=0.20,<1",
+  "coverage[toml]>=7.6,<8",
+  "mypy>=1.14,<2",
+  "pytest>=8.3,<9",
+  "pytest-asyncio>=0.25,<1",
+  "pytest-cov>=6,<7",
+  "pytest-httpx>=0.35,<1",
+  "ruff>=0.9,<1",
+  "types-PyYAML>=6.0,<7",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["packages/proactive_core/proactive_core"]
+
+[tool.pytest.ini_options]
+addopts = "-q --strict-markers --strict-config"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+exclude = ["alembic/versions", "node_modules", ".venv", "apps/web/.next"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC", "S", "RUF"]
+ignore = ["S101", "S105", "S311", "B008", "UP046", "RUF002"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["proactive_core"]
+
+[[tool.mypy.overrides]]
+module = ["proactive_core.db.models", "proactive_core.celery_app", "proactive_core.agent_tasks"]
+ignore_errors = true
+
+[tool.coverage.run]
+branch = true
+source = ["proactive_core"]

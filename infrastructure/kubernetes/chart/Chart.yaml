@@ -1,0 +1,7 @@
+apiVersion: v2
+name: proactive-seo
+description: ProActive SEO microservices, workers, and frontend
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+

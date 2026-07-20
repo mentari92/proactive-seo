@@ -1,0 +1,476 @@
+{
+  "project": "proactive-seo",
+  "repo": "https://github.com/ahmadasrizalmi/proactive-seo.git",
+  "deploy_dir": "/opt/proactive-seo",
+  "started_at": "2026-07-19T16:16:33.443519Z",
+  "current_phase": 7,
+  "status": "complete",
+  "phases": {
+    "1": {
+      "name": "Foundation",
+      "status": "done",
+      "tasks": {
+        "1": {
+          "name": "Project structure",
+          "status": "done",
+          "files": [
+            "backend/",
+            "frontend/",
+            "infrastructure/",
+            "scripts/",
+            "docs/"
+          ],
+          "description": "Create monorepo structure: backend/, frontend/, infrastructure/, scripts/"
+        },
+        "2": {
+          "name": "Docker Compose setup",
+          "status": "done",
+          "files": [
+            "infrastructure/docker-compose.yml",
+            "infrastructure/docker-compose.prod.yml"
+          ],
+          "description": "docker-compose.yml with PostgreSQL, Redis, backend, frontend"
+        },
+        "3": {
+          "name": "PostgreSQL + Redis setup",
+          "status": "done",
+          "files": [
+            "backend/app/config.py",
+            "backend/app/database.py"
+          ],
+          "description": "Config files, init scripts, health checks"
+        },
+        "4": {
+          "name": "Database migrations",
+          "status": "done",
+          "files": [
+            "backend/alembic/",
+            "backend/alembic.ini",
+            "backend/alembic/versions/b374a38dd8bf_initial_37_tables.py"
+          ],
+          "description": "Alembic setup, all 37 tables from docs/02-database.md"
+        },
+        "5": {
+          "name": "FastAPI skeleton",
+          "status": "done",
+          "files": [
+            "backend/app/main.py",
+            "backend/app/config.py",
+            "backend/app/routes/__init__.py"
+          ],
+          "description": "Main app, routers, middleware, config, health endpoints"
+        },
+        "6": {
+          "name": "Authentication",
+          "status": "done",
+          "files": [
+            "backend/app/routes/auth.py",
+            "backend/app/security/__init__.py"
+          ],
+          "description": "OAuth 2.0 + JWT from docs/05-security.md"
+        },
+        "7": {
+          "name": "Basic CRUD",
+          "status": "done",
+          "files": [
+            "backend/app/routes/organizations.py",
+            "backend/app/routes/users.py",
+            "backend/app/routes/projects.py"
+          ],
+          "description": "Organizations, users, projects CRUD from docs/03-api-specification.md"
+        }
+      }
+    },
+    "2": {
+      "name": "Core Agents",
+      "status": "done",
+      "tasks": {
+        "8": {
+          "name": "Celery worker setup",
+          "status": "done",
+          "files": [
+            "backend/app/celery_app.py"
+          ],
+          "description": "Celery config, worker, beat scheduler"
+        },
+        "9": {
+          "name": "Crawler Agent",
+          "status": "done",
+          "files": [
+            "backend/app/agents/crawler.py"
+          ],
+          "description": "Multi-engine crawl, broken link detect from docs/04-agent-system.md"
+        },
+        "10": {
+          "name": "Technical Agent",
+          "status": "done",
+          "files": [
+            "backend/app/agents/technical.py"
+          ],
+          "description": "CWV, schema gen, self-healing from docs/04-agent-system.md"
+        },
+        "11": {
+          "name": "Agent orchestration",
+          "status": "done",
+          "files": [
+            "backend/app/agents/registry.py",
+            "backend/app/agents/scheduler.py",
+            "backend/app/agents/governor.py"
+          ],
+          "description": "Agent registry, scheduler, resource governor"
+        },
+        "12": {
+          "name": "Event bus",
+          "status": "done",
+          "files": [
+            "backend/app/events/bus.py",
+            "backend/app/events/types.py",
+            "backend/app/events/handlers.py"
+          ],
+          "description": "Redis pub/sub, event types, handlers"
+        }
+      }
+    },
+    "3": {
+      "name": "Content & Rank",
+      "status": "done",
+      "tasks": {
+        "13": {
+          "name": "Content Agent",
+          "status": "done",
+          "files": [
+            "backend/app/agents/content.py"
+          ],
+          "description": "Audit, dual scoring, AEO/GEO from docs/04-agent-system.md"
+        },
+        "14": {
+          "name": "Rank Agent",
+          "status": "done",
+          "files": [
+            "backend/app/agents/rank.py"
+          ],
+          "description": "SERP tracking via DataForSEO from docs/04-agent-system.md"
+        },
+        "15": {
+          "name": "DataForSEO integration",
+          "status": "done",
+          "files": [
+            "backend/app/integrations/dataforseo.py"
+          ],
+          "description": "SERP + Keywords + Backlinks from docs/06-integrations.md"
+        },
+        "16": {
+          "name": "GSC integration",
+          "status": "done",
+          "files": [
+            "backend/app/integrations/gsc.py"
+          ],
+          "description": "Google Search Console from docs/06-integrations.md"
+        }
+      }
+    },
+    "4": {
+      "name": "Outreach",
+      "status": "done",
+      "tasks": {
+        "17": {
+          "name": "Backlink & Outreach Agent",
+          "status": "done",
+          "files": [
+            "backend/app/agents/backlink.py"
+          ],
+          "description": "Full agent from docs/04-agent-system.md"
+        },
+        "18": {
+          "name": "HARO Response Generator",
+          "status": "done",
+          "files": [
+            "backend/app/agents/backlink.py"
+          ],
+          "description": "Parse, generate, track from docs/04-agent-system.md"
+        },
+        "19": {
+          "name": "Broken Link Building",
+          "status": "done",
+          "files": [
+            "backend/app/agents/backlink.py"
+          ],
+          "description": "Scan, detect, outreach from docs/04-agent-system.md"
+        },
+        "20": {
+          "name": "Guest Post Outreach",
+          "status": "done",
+          "files": [
+            "backend/app/agents/backlink.py"
+          ],
+          "description": "Prospect, pitch, track from docs/04-agent-system.md"
+        },
+        "21": {
+          "name": "Gmail API integration",
+          "status": "done",
+          "files": [
+            "backend/app/integrations/gmail.py"
+          ],
+          "description": "Send, track, webhook from docs/06-integrations.md"
+        },
+        "22": {
+          "name": "Campaign Tracker",
+          "status": "done",
+          "files": [
+            "backend/app/routes/campaigns.py"
+          ],
+          "description": "CRUD, status pipeline, stats from docs/03-api-specification.md"
+        }
+      }
+    },
+    "5": {
+      "name": "Frontend",
+      "status": "done",
+      "tasks": {
+        "23": {
+          "name": "Next.js setup",
+          "status": "done",
+          "files": [
+            "frontend/package.json",
+            "frontend/next.config.mjs",
+            "frontend/tailwind.config.ts",
+            "frontend/tsconfig.json",
+            "frontend/components.json",
+            "frontend/postcss.config.mjs"
+          ],
+          "description": "App Router, Tailwind, shadcn/ui from docs/07-frontend.md"
+        },
+        "24": {
+          "name": "Design system",
+          "status": "done",
+          "files": [
+            "frontend/src/app/globals.css",
+            "frontend/src/lib/utils.ts",
+            "frontend/src/components/ui/button.tsx",
+            "frontend/src/components/ui/card.tsx",
+            "frontend/src/components/ui/input.tsx",
+            "frontend/src/components/ui/badge.tsx",
+            "frontend/src/components/ui/table.tsx",
+            "frontend/src/components/ui/tabs.tsx",
+            "frontend/src/components/ui/dialog.tsx",
+            "frontend/src/components/ui/select.tsx",
+            "frontend/src/components/ui/checkbox.tsx",
+            "frontend/src/components/ui/avatar.tsx",
+            "frontend/src/components/ui/label.tsx",
+            "frontend/src/components/ui/separator.tsx",
+            "frontend/src/components/ui/skeleton.tsx",
+            "frontend/src/components/ui/sheet.tsx",
+            "frontend/src/components/ui/textarea.tsx",
+            "frontend/src/components/ui/tooltip.tsx",
+            "frontend/src/components/ui/dropdown-menu.tsx"
+          ],
+          "description": "Tokens, components from docs/07-frontend.md"
+        },
+        "25": {
+          "name": "Auth pages",
+          "status": "done",
+          "files": [
+            "frontend/src/app/login/page.tsx",
+            "frontend/src/app/register/page.tsx",
+            "frontend/src/app/forgot-password/page.tsx",
+            "frontend/src/app/verify-email/page.tsx"
+          ],
+          "description": "Login, register, forgot password, verify email"
+        },
+        "26": {
+          "name": "Dashboard",
+          "status": "done",
+          "files": [
+            "frontend/src/app/(dashboard)/page.tsx",
+            "frontend/src/app/(dashboard)/layout.tsx",
+            "frontend/src/app/(dashboard)/activity/page.tsx",
+            "frontend/src/app/(dashboard)/notifications/page.tsx",
+            "frontend/src/components/layout/sidebar.tsx",
+            "frontend/src/components/layout/header.tsx",
+            "frontend/src/components/dashboard/stat-card.tsx",
+            "frontend/src/components/dashboard/health-score-ring.tsx",
+            "frontend/src/components/providers.tsx",
+            "frontend/src/lib/stores/auth.ts",
+            "frontend/src/lib/stores/sidebar.ts"
+          ],
+          "description": "Overview, activity, notifications"
+        },
+        "27": {
+          "name": "SEO Command Center",
+          "status": "done",
+          "files": [
+            "frontend/src/app/(dashboard)/keywords/page.tsx",
+            "frontend/src/app/(dashboard)/technical/page.tsx"
+          ],
+          "description": "Keywords, pages, issues, health score"
+        },
+        "28": {
+          "name": "Agent Control Center",
+          "status": "done",
+          "files": [
+            "frontend/src/app/(dashboard)/agents/page.tsx",
+            "frontend/src/components/agents/agent-status-card.tsx"
+          ],
+          "description": "Status, logs, config per agent"
+        },
+        "29": {
+          "name": "Campaign Tracker UI",
+          "status": "done",
+          "files": [
+            "frontend/src/app/(dashboard)/campaigns/page.tsx",
+            "frontend/src/components/campaigns/campaign-status-badge.tsx"
+          ],
+          "description": "Table + Kanban views"
+        },
+        "30": {
+          "name": "Content Hub",
+          "status": "done",
+          "files": [
+            "frontend/src/app/(dashboard)/content/page.tsx"
+          ],
+          "description": "Briefs, drafts, editor"
+        },
+        "31": {
+          "name": "Settings pages",
+          "status": "done",
+          "files": [
+            "frontend/src/app/(dashboard)/settings/layout.tsx",
+            "frontend/src/app/(dashboard)/settings/page.tsx",
+            "frontend/src/app/(dashboard)/settings/organization/page.tsx",
+            "frontend/src/app/(dashboard)/settings/integrations/page.tsx",
+            "frontend/src/app/(dashboard)/settings/security/page.tsx",
+            "frontend/src/app/(dashboard)/settings/notifications/page.tsx",
+            "frontend/src/app/(dashboard)/settings/billing/page.tsx"
+          ],
+          "description": "Profile, org, integrations, security, notifications, billing"
+        }
+      }
+    },
+    "6": {
+      "name": "Integrations",
+      "status": "done",
+      "tasks": {
+        "32": {
+          "name": "GA4 integration",
+          "status": "done",
+          "files": [
+            "backend/app/integrations/ga4.py"
+          ],
+          "description": "Google Analytics 4 from docs/06-integrations.md"
+        },
+        "33": {
+          "name": "Bing Webmaster integration",
+          "status": "done",
+          "files": [
+            "backend/app/integrations/bing.py"
+          ],
+          "description": "Bing Webmaster API from docs/06-integrations.md"
+        },
+        "34": {
+          "name": "Exa AI integration",
+          "status": "done",
+          "files": [
+            "backend/app/integrations/exa.py"
+          ],
+          "description": "Web search from docs/06-integrations.md"
+        },
+        "35": {
+          "name": "Tavily integration",
+          "status": "done",
+          "files": [
+            "backend/app/integrations/tavily.py"
+          ],
+          "description": "Research API from docs/06-integrations.md"
+        },
+        "36": {
+          "name": "PageSpeed Insights integration",
+          "status": "done",
+          "files": [
+            "backend/app/integrations/pagespeed.py"
+          ],
+          "description": "CWV data from docs/06-integrations.md"
+        }
+      }
+    },
+    "7": {
+      "name": "Polish",
+      "status": "done",
+      "tasks": {
+        "37": {
+          "name": "Monitoring setup",
+          "status": "done",
+          "files": [
+            "backend/app/monitoring/__init__.py",
+            "backend/app/monitoring/metrics.py",
+            "backend/app/monitoring/health.py"
+          ],
+          "description": "Prometheus + Grafana from docs/08-monitoring.md"
+        },
+        "38": {
+          "name": "Logging setup",
+          "status": "done",
+          "files": [
+            "backend/app/logging_config.py"
+          ],
+          "description": "Structured JSON + Loki from docs/08-monitoring.md"
+        },
+        "39": {
+          "name": "Alerting rules",
+          "status": "done",
+          "files": [
+            "backend/app/monitoring/metrics.py"
+          ],
+          "description": "Critical, warning, info from docs/08-monitoring.md"
+        },
+        "40": {
+          "name": "Security hardening",
+          "status": "done",
+          "files": [
+            "backend/app/security/__init__.py",
+            "backend/app/security/rate_limiter.py",
+            "backend/app/security/waf.py",
+            "backend/app/security/audit.py",
+            "backend/app/security/encryption.py"
+          ],
+          "description": "WAF, rate limiting, audit logs from docs/05-security.md"
+        },
+        "41": {
+          "name": "Performance optimization",
+          "status": "done",
+          "files": [
+            "backend/alembic/versions/f7a1b2c3d4e5_performance_indexes.py",
+            "backend/app/cache.py"
+          ],
+          "description": "DB indexes, caching, CDN config"
+        },
+        "42": {
+          "name": "Documentation",
+          "status": "done",
+          "files": [
+            "README.md",
+            "DEPLOYMENT.md"
+          ],
+          "description": "README, API docs, deployment guide"
+        }
+      }
+    }
+  },
+  "stats": {
+    "total_tasks": 42,
+    "completed": 42,
+    "in_progress": 0,
+    "pending": 0,
+    "percent_complete": 100.0
+  },
+  "last_updated": "2026-07-19T23:45:00.000000Z",
+  "last_task_completed": "42 - Documentation",
+  "errors": [],
+  "post_completion_fixes": [
+    {
+      "timestamp": "2026-07-19T23:45:00.000000Z",
+      "description": "Fixed broken security/auth import chain - created security/auth.py with JWT and password functions, updated security/__init__.py exports, registered campaigns router in main.py, added prometheus_client and PyJWT to requirements.txt",
+      "files_created": ["backend/app/security/auth.py"],
+      "files_modified": ["backend/app/security/__init__.py", "backend/app/main.py", "backend/requirements.txt"]
+    }
+  ]
+}

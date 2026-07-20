@@ -1,0 +1,16 @@
+services:
+  auth-service: {port: 8001, profile: core, owns: [auth, users]}
+  tenant-service: {port: 8002, profile: core, owns: [organizations, projects]}
+  keyword-service: {port: 8003, profile: agents, owns: [keywords]}
+  crawl-service: {port: 8004, profile: agents, owns: [pages, issues, sentinel]}
+  content-service: {port: 8005, profile: agents, owns: [content, forge]}
+  rank-tracker-service: {port: 8006, profile: agents, owns: [rankings, scout]}
+  serp-monitor-service: {port: 8007, profile: agents, owns: [serp_features]}
+  analytics-service: {port: 8008, profile: integrations, owns: [analytics]}
+  notification-service: {port: 8009, profile: integrations, owns: [streams, webhooks]}
+  billing-service: {port: 8010, profile: full, owns: [billing, quotas]}
+  report-service: {port: 8011, profile: core, owns: [reports]}
+  link-analysis-service: {port: 8012, profile: agents, owns: [backlinks, campaigns, outreach]}
+  ai-service: {port: 8013, profile: agents, owns: [agents, decisions, execution]}
+  audit-service: {port: 8014, profile: core, owns: [audit, security]}
+
