@@ -9,7 +9,7 @@ You are building ProActive SEO — an enterprise-grade SEO automation platform t
 
 ## CONTEXT
 
-Read these blueprint documents FIRST before writing any code:
+Read these specification documents FIRST before writing any code:
 
 1. docs/00-master-prd.md — Master PRD (entry point, read this first)
 2. docs/01-architecture.md — System architecture (microservices, K8s, CI/CD)

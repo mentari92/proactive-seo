@@ -1,7 +1,7 @@
 # Canonical Contract Reconciliation
 
-This file records executable resolutions where the blueprint documents disagree. The current
-implementation prompt has highest precedence, followed by public blueprint contracts, current
+This file records executable resolutions where the specification documents disagree. The current
+implementation prompt has highest precedence, followed by public contracts, current
 provider documentation, and finally draft code examples.
 
 | Concern | Canonical resolution |

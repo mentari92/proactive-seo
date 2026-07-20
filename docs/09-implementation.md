@@ -5,7 +5,7 @@
 The executable source of truth is split between `contracts/api-v1.yaml` and
 `contracts/platform.yaml`. The former contains all 97 external operations. The latter contains all
 37 application tables, eight agents, 13 execution providers, status enums, and the OpenAI role
-router. `contracts/reconciliation.md` explains every blueprint conflict resolved during the build.
+router. `contracts/reconciliation.md` explains every specification conflict resolved during the build.
 
 ## Services
 

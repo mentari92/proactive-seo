@@ -1,4 +1,4 @@
-# Proactive SEO Blueprint — Master Product Requirements Document
+# Proactive SEO — Master Product Requirements Document
 
 **Version:** 1.0.0  
 **Date:** July 2026  
@@ -34,7 +34,7 @@
 
 ### Product Vision
 
-Proactive SEO Blueprint is an AI-powered SEO automation platform that handles 87% of routine SEO tasks without human intervention. It continuously monitors site health, discovers opportunities, generates optimized content, and executes improvements — transforming SEO from a reactive, manual discipline into a proactive, autonomous growth engine.
+Proactive SEO is an AI-powered SEO automation platform that handles 87% of routine SEO tasks without human intervention. It continuously monitors site health, discovers opportunities, generates optimized content, and executes improvements — transforming SEO from a reactive, manual discipline into a proactive, autonomous growth engine.
 
 ### Key Differentiators
 
@@ -72,7 +72,7 @@ SEO is critical for sustainable growth, but it's broken:
 
 ### Solution Overview
 
-Proactive SEO Blueprint is a platform where 8 specialized AI agents autonomously manage the full SEO lifecycle:
+Proactive SEO is a platform where 8 specialized AI agents autonomously manage the full SEO lifecycle:
 
 1. **Crawl & Diagnose** — Continuously audit site health (technical SEO)
 2. **Discover Opportunities** — Find high-value keywords, content gaps, and backlink targets
@@ -105,7 +105,7 @@ Proactive SEO Blueprint is a platform where 8 specialized AI agents autonomously
 
 ### Competitive Analysis
 
-| Capability | Proactive SEO Blueprint | DataForSEO | SEMrush | SurferSEO |
+| Capability | Proactive SEO | DataForSEO | SEMrush | SurferSEO |
 |---|---|---|---|---|
 | **Price (Pro tier)** | $99/mo | $199/mo | $129/mo | $89/mo |
 | **Automation Level** | 87% autonomous | Manual tool | Manual tool | Semi-automated |
@@ -1045,4 +1045,4 @@ GitHub Actions
 
 ---
 
-*This document is the single source of truth for the Proactive SEO Blueprint product. Each section references a detailed sub-document. Updates to sub-documents should be reflected in the relevant summary section here.*
+*This document is the single source of truth for the Proactive SEO product. Each section references a detailed sub-document. Updates to sub-documents should be reflected in the relevant summary section here.*

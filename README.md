@@ -1,7 +1,7 @@
 # ProActive SEO
 
 Enterprise-grade SEO automation platform — **87% task automation** with agentic AI. This repository
-contains the executable platform and the source blueprints from which its contracts are generated.
+contains the executable platform and configuration from which its services are generated.
 
 ## Quick start
 
@@ -21,7 +21,7 @@ disabled by default.
 
 ## Documentation
 
-Complete blueprint in [`docs/`](docs/):
+Complete documentation in [`docs/`](docs/):
 
 | # | Document | Content |
 |---|----------|---------|
@@ -47,7 +47,7 @@ proactive-seo/
 ├── infrastructure/          # Helm/Kubernetes, ArgoCD, and AWS/Cloudflare Terraform
 ├── observability/           # Prometheus, Grafana, Loki, Tempo, OTel, Alertmanager
 ├── tests/                   # Unit, contract, integration, security, and agent tests
-└── docs/                    # Product blueprints, implementation guide, and runbooks
+└── docs/                    # Product documentation, implementation guide, and runbooks
 ```
 
 ## Key Features
