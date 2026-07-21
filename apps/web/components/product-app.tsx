@@ -84,8 +84,8 @@ const CAMPAIGNS = [
   { name: "Acme mentions", type: "Unlinked mention", sent: 31, replies: 12, links: 9, status: "Active" }
 ] as const;
 
-function titleFor(route: string) {
-  if (route === "/overview") return ["Good morning, Maya", "Here’s what your agents improved while you were away."];
+function titleFor(route: string, userName = "Maya") {
+  if (route === "/overview") return [`Good morning, ${userName}`, "Here’s what your agents improved while you were away."];
   const segment = route.split("/").filter(Boolean).at(-1) ?? "overview";
   const title = segment.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
   return [title, "Monitor performance, review recommendations, and approve high-impact work."];
@@ -164,14 +164,38 @@ function AuthPage({ route }: { route: string }) {
 }
 
 function Sidebar({ route }: { route: string }) {
-  const { sidebarOpen, toggleSidebar, accessToken } = useWorkspace();
+  const { sidebarOpen, toggleSidebar } = useWorkspace();
+  const accessToken = useWorkspace((state) => state.accessToken);
+  const projects = useQuery({
+    queryKey: ["projects", accessToken],
+    queryFn: () => api<Array<{ name?: string; plan?: string }>>("/projects", { headers: { Authorization: `Bearer ${accessToken}` } }),
+    enabled: Boolean(accessToken)
+  });
+  const users = useQuery({
+    queryKey: ["users", accessToken],
+    queryFn: () => api<Array<{ name?: string; role?: string }>>("/users", { headers: { Authorization: `Bearer ${accessToken}` } }),
+    enabled: Boolean(accessToken)
+  });
+  const project = projects.data?.data[0];
+  const user = users.data?.data[0];
+  const projectName = project?.name ?? "Loading...";
+  const projectPlan = project?.plan ?? "Loading...";
+  const userName = user?.name ?? "";
+  const userRole = user?.role ?? "";
+  const userInitials = userName
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase() || "MC";
   const streamStatus = useSSE(`${API_URL}/stream/agents`, accessToken);
   return (
     <>
       {sidebarOpen && <button className="scrim" aria-label="Close navigation" onClick={toggleSidebar} />}
       <aside className={cn("sidebar", sidebarOpen && "sidebar-open")}>
         <div className="sidebar-brand"><span className="brand-mark">P</span><span>ProActive SEO</span><button className="mobile-close" onClick={toggleSidebar} aria-label="Close navigation"><X size={18} /></button></div>
-        <div className="project-switcher"><span className="project-avatar">A</span><span><b>Acme.com</b><small>Professional</small></span><ChevronDown size={15} /></div>
+        <div className="project-switcher"><span className="project-avatar">{projectName[0]?.toUpperCase() ?? "A"}</span><span><b>{projectName}</b><small>{projectPlan}</small></span><ChevronDown size={15} /></div>
         <nav aria-label="Primary navigation">
           {NAVIGATION.map((item) => {
             const Icon = icons[item.icon];
@@ -180,7 +204,7 @@ function Sidebar({ route }: { route: string }) {
           })}
         </nav>
         <div className="sidebar-status"><span className="status-dot" /><span><b>{streamStatus === "connected" ? "Live agent stream" : "8 agents configured"}</b><small>{streamStatus === "error" ? "Reconnecting…" : streamStatus === "connecting" ? "Connecting…" : "Event bus ready"}</small></span></div>
-        <div className="sidebar-user"><span className="user-avatar">MC</span><span><b>Maya Chen</b><small>Owner</small></span><MoreHorizontal size={16} /></div>
+        <div className="sidebar-user"><span className="user-avatar">{userInitials}</span><span><b>{userName}</b><small>{userRole}</small></span><MoreHorizontal size={16} /></div>
       </aside>
     </>
   );
@@ -189,6 +213,20 @@ function Sidebar({ route }: { route: string }) {
 function Header() {
   const { toggleSidebar, setCommandOpen } = useWorkspace();
   const [dark, setDark] = useState(false);
+  const accessToken = useWorkspace((state) => state.accessToken);
+  const users = useQuery({
+    queryKey: ["users", accessToken],
+    queryFn: () => api<Array<{ name?: string }>>("/users", { headers: { Authorization: `Bearer ${accessToken}` } }),
+    enabled: Boolean(accessToken)
+  });
+  const userName = users.data?.data[0]?.name ?? "";
+  const userInitials = userName
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase() || "P";
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
@@ -199,7 +237,7 @@ function Header() {
       <div className="topbar-actions">
         <button className="icon-button" onClick={() => setDark(!dark)} aria-label="Toggle dark mode">{dark ? <Sun size={18} /> : <Moon size={18} />}</button>
         <button className="icon-button notification-button" aria-label="Notifications"><Bell size={18} /><span /></button>
-        <button className="avatar-button" aria-label="Open profile">MC</button>
+        <button className="avatar-button" aria-label="Open profile">{userInitials}</button>
       </div>
     </header>
   );
@@ -247,7 +285,7 @@ function Overview() {
         const health = await api<{ health_score?: number }>(`/projects/${pid}/health-score`, { headers: { Authorization: `Bearer ${accessToken}` } });
         return { health_score: (health.data as Record<string, unknown>).health_score as number ?? 87, project_name: (projects[0] as Record<string, string>).name };
       }
-      return { health_score: 87, project_name: "GetDocuTrip" };
+      return { health_score: 87, project_name: "ProActive SEO" };
     }),
     enabled: Boolean(accessToken)
   });
@@ -517,8 +555,26 @@ function RouteContent({ route }: { route: string }) {
 }
 
 export function ProductApp({ route }: { route: string }) {
+  const accessToken = useWorkspace((state) => state.accessToken);
+  const users = useQuery({
+    queryKey: ["users", accessToken],
+    queryFn: () => api<Array<{ name?: string }>>("/users", { headers: { Authorization: `Bearer ${accessToken}` } }),
+    enabled: Boolean(accessToken)
+  });
+  const projects = useQuery({
+    queryKey: ["projects", accessToken],
+    queryFn: () => api<Array<{ name?: string; plan?: string }>>("/projects", { headers: { Authorization: `Bearer ${accessToken}` } }),
+    enabled: Boolean(accessToken)
+  });
+  const projectName = projects.data?.data[0]?.name ?? "Loading...";
   if (["/login", "/register", "/forgot-password", "/verify-email"].includes(route)) return <AuthPage route={route} />;
-  const [title, description] = titleFor(route);
+  // Redirect to login if not authenticated
+  if (!accessToken && typeof window !== "undefined") {
+    window.location.assign("/login");
+    return null;
+  }
+  const userName = users.data?.data[0]?.name ?? "";
+  const [title, description] = titleFor(route, userName);
   return (
     <div className="app-shell">
       <a href="#main-content" className="skip-link">Skip to content</a>
@@ -526,7 +582,7 @@ export function ProductApp({ route }: { route: string }) {
       <div className="main-column">
         <Header />
         <main id="main-content" className="page-content">
-          <header className="page-header"><div><p className="breadcrumb">Acme.com <span>/</span> {route.split("/").filter(Boolean).join(" / ")}</p><h1>{title}</h1><p>{description}</p></div><div className="page-actions"><Button variant="secondary">Export</Button><Button><Plus size={15} /> New action</Button></div></header>
+          <header className="page-header"><div><p className="breadcrumb">{projectName} <span>/</span> {route.split("/").filter(Boolean).join(" / ")}</p><h1>{title}</h1><p>{description}</p></div><div className="page-actions"><Button variant="secondary">Export</Button><Button><Plus size={15} /> New action</Button></div></header>
           <RouteContent route={route} />
         </main>
       </div>

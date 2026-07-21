@@ -474,6 +474,13 @@ def create_app(service_name: str = "all", settings: Settings | None = None) -> F
         app.state.store = PostgresStore(app.state.database, app.state.redis)
         app.state.tokens = TokenManager(runtime, RedisSessionStore(app.state.redis))
         app.state.limiter = RedisWindowLimiter(app.state.redis)
+    elif runtime.database_url and runtime.redis_url:
+        # Development mode with real database
+        app.state.redis = Redis.from_url(runtime.redis_url, decode_responses=True)
+        app.state.database = Database(runtime.database_url, echo=runtime.debug)
+        app.state.store = PostgresStore(app.state.database, app.state.redis)
+        app.state.tokens = TokenManager(runtime, RedisSessionStore(app.state.redis))
+        app.state.limiter = RedisWindowLimiter(app.state.redis)
     else:
         app.state.redis = None
         app.state.database = None

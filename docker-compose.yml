@@ -6,7 +6,8 @@ x-common-env: &common-env
   APP_TASK_DISPATCH_ENABLED: "true"
   APP_DATABASE_URL: postgresql+asyncpg://proactive:proactive@postgres:5432/proactive
   APP_REDIS_URL: redis://redis:6379/0
-  APP_CORS_ORIGINS: '["http://localhost:3000"]'
+  APP_PUBLIC_BASE_URL: https://seo.mentarich.com
+  APP_CORS_ORIGINS: '["https://seo.mentarich.com"]'
 
 x-api: &api
   build:
@@ -71,12 +72,11 @@ services:
   api:
     <<: *api
     profiles: [core, full]
+    env_file: .env
     environment:
       APP_TASK_DISPATCH_ENABLED: "true"
       APP_LIVE_ACTIONS_ENABLED: "true"
       APP_SERVICE_NAME: all
-      APP_DATABASE_URL: postgresql+asyncpg://proactive:proactive@postgres:5432/proactive
-      APP_REDIS_URL: redis://redis:6379/0
     ports: ["8000:8000"]
     depends_on:
       migrate:
@@ -201,6 +201,8 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: https://seo.mentarich.com/api/v1
     profiles: [core, full]
     environment:
       INTERNAL_API_URL: http://api:8000
