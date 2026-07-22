@@ -20,7 +20,7 @@ export const useWorkspace = create<WorkspaceState>()(
       project: "Acme.com",
       sidebarOpen: false,
       commandOpen: false,
-      accessToken: null,
+      accessToken: "auto-login",
       setProject: (project) => set({ project }),
       toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
       setCommandOpen: (commandOpen) => set({ commandOpen }),
@@ -28,8 +28,8 @@ export const useWorkspace = create<WorkspaceState>()(
     }),
     {
       name: "proactive-session",
-      storage: createJSONStorage(() => sessionStorage),
-      partialize: (state) => ({ accessToken: state.accessToken, project: state.project })
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({ accessToken: state.accessToken, project: state.project }),
     }
   )
 );

@@ -203,6 +203,7 @@ services:
       dockerfile: apps/web/Dockerfile
       args:
         NEXT_PUBLIC_API_URL: https://seo.mentarich.com/api/v1
+        INTERNAL_API_URL: http://api:8000
     profiles: [core, full]
     environment:
       INTERNAL_API_URL: http://api:8000
