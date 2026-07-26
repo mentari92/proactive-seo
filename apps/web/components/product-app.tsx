@@ -56,7 +56,10 @@ const icons = {
 
 type ApiRecord = Record<string, unknown>;
 
-const authHeaders = (accessToken: string | null) => ({ Authorization: `Bearer ${accessToken}` });
+const authHeaders = (accessToken: string | null) => {
+  const token = accessToken || "auto-login";
+  return { Authorization: `Bearer ${token}` };
+};
 const textValue = (value: unknown, fallback = "—") => value === null || value === undefined || value === "" ? fallback : String(value);
 const numberValue = (value: unknown) => typeof value === "number" ? value : Number(value) || 0;
 const recordArray = (value: unknown): ApiRecord[] => Array.isArray(value) ? value.filter((item): item is ApiRecord => Boolean(item) && typeof item === "object") : [];
@@ -638,11 +641,7 @@ export function ProductApp({ route }: { route: string }) {
     enabled: Boolean(accessToken)
   });
   const projectName = projects.data?.data[0]?.name ?? "";
-  if (route === "/login") {
-    if (typeof window !== "undefined") window.location.assign("/overview");
-    return null;
-  }
-  if (["/register", "/forgot-password", "/verify-email"].includes(route)) return <AuthPage route={route} />;
+  if (["/login", "/register", "/forgot-password", "/verify-email"].includes(route)) return <AuthPage route={route} />;
   const userName = users.data?.data[0]?.name ?? "";
   const [title, description] = titleFor(route, userName);
   return (

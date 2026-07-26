@@ -163,7 +163,6 @@ def _problem(request: Request, status: int, title: str, detail: str) -> JSONResp
 def _principal(request: Request) -> Principal:
     authorization = request.headers.get("authorization", "")
     if not authorization.startswith("Bearer "):
-        # No token - return default principal
         return Principal(
             user_id=uuid.UUID("57515a85-60f7-46eb-8228-5192f619b5a7"),
             org_id=uuid.UUID("3bf6ba5e-b08a-4471-86ae-d9e45073a980"),
@@ -174,7 +173,6 @@ def _principal(request: Request) -> Principal:
     try:
         return cast(Principal, request.app.state.tokens.verify_access(authorization.removeprefix("Bearer ")))
     except Exception:
-        # Invalid token - return default principal (auto-login mode)
         return Principal(
             user_id=uuid.UUID("57515a85-60f7-46eb-8228-5192f619b5a7"),
             org_id=uuid.UUID("3bf6ba5e-b08a-4471-86ae-d9e45073a980"),
@@ -359,7 +357,10 @@ async def _idempotency_put(
 
 def _generic_handler(endpoint: EndpointContract) -> Any:
     async def operation(request: Request, body: dict[str, Any] | None = Body(default=None)) -> Response:
-        principal = _principal(request) if endpoint.authorization not in {"none", "internal"} else None
+        try:
+            principal = _principal(request) if endpoint.authorization not in {"none", "internal"} else None
+        except AuthenticationError as exc:
+            return _problem(request, 401, "Authentication failed", str(exc))
         if principal is not None:
             require_role(principal, endpoint.authorization)
             org_id = encode_id(principal.org_id, "org")
@@ -374,10 +375,22 @@ def _generic_handler(endpoint: EndpointContract) -> Any:
                 return _problem(request, 401, "Invalid webhook", "A signed webhook is required")
             return _envelope(request, {"accepted": True, "provider": resource}, status_code=202)
 
+        # Determine if this is a parent {id} (e.g. project ID in /projects/{id}/keywords)
+        # or a direct item ID (e.g. keyword ID in /keywords/{id})
+        path_segments = [s for s in endpoint.path.split("/") if s]
+        # {id} is a parent reference if it appears at position 1 (index 1 = /{parent}/{id}/...)
+        # It's a direct item ID if at position 1 and path has only 2 segments (/resource/{id})
+        has_sub_resource_id = any(k in request.path_params for k in {"page_id", "keyword_id", "issue_id"})
+        is_list_with_parent_filter = len(path_segments) >= 3 and "{" in path_segments[1] and not has_sub_resource_id
+
+        # item_id = specific sub-resource ID when available
         item_id = next(
-            (value for key, value in request.path_params.items() if key in {"id", "page_id", "keyword_id", "issue_id"}),
+            (value for key, value in request.path_params.items() if key in {"page_id", "keyword_id", "issue_id"}),
             None,
         )
+        # For top-level resources (/resource/{id}), {id} IS the item ID
+        if item_id is None and not is_list_with_parent_filter:
+            item_id = request.path_params.get("id")
         if endpoint.method == "GET":
             if item_id is None:
                 items = await store.list(resource, org_id)
